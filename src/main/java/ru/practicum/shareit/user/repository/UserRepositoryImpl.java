@@ -30,7 +30,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public  Optional<User> findUserById(Long id) {
+    public Optional<User> findUserById(Long id) {
         return Optional.ofNullable(users.get(id));
     }
 
@@ -48,16 +48,6 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean emailExist(String email) {
         for (User user : users.values()) {
             if (user.getEmail().equals(email)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean userExist(Long id) {
-        for (User user : users.values()) {
-            if (user.getId().equals(id)) {
                 return true;
             }
         }

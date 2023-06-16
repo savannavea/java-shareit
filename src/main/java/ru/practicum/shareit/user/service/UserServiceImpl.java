@@ -34,8 +34,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(UserDto userDto, Long id) {
 
-        checkUserExist(id);
-
         User user = UserMapper.toUser(getUserById(id));
 
         if (userDto.getName() != null) {
@@ -50,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
         User userUpdated = userRepository.update(user, id);
 
-        log.info("Обновлён пользователь: {}", userUpdated);
+        log.info("User updated: {}", userUpdated);
         return UserMapper.toUserDto(userUpdated);
     }
 
@@ -59,7 +57,7 @@ public class UserServiceImpl implements UserService {
         return userRepository
                 .findAll()
                 .stream()
-                .map(UserMapper :: toUserDto)
+                .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
@@ -80,11 +78,4 @@ public class UserServiceImpl implements UserService {
                     String.format("User with email address: %s already registered", email));
         }
     }
-
-    private void checkUserExist(long id) {
-        if (!userRepository.userExist(id)) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден");
-        }
-    }
-
 }
