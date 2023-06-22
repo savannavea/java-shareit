@@ -50,7 +50,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleEmailExistingException(EmailExists exception) {
+    public ErrorResponse handleEmailExistingException(final ConflictException exception) {
         return new ErrorResponse(exception.getMessage());
     }
 }

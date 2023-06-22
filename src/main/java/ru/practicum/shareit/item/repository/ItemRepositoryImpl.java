@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -37,11 +36,8 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Item findItemById(Long id) {
-        if (!items.containsKey(id)) {
-            throw new NotFoundException(String.format("Item with id %d not found", id));
-        }
-        return items.get(id);
+    public Optional<Item> findItemById(Long id) {
+        return Optional.ofNullable(items.get(id));
     }
 
     @Override
@@ -50,7 +46,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public List<ItemDto> findItemByQuery(String query) {
+    public List<ItemDto> findItemsByQuery(String query) {
         List<ItemDto> listItems = new ArrayList<>();
         for (Item item : items.values()) {
             if (item.isAvailable() && (item.getDescription().toLowerCase().contains(query.toLowerCase()) ||
@@ -62,7 +58,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public void deleteItemsById(Long id) {
+    public void deleteItemById(Long id) {
         items.remove(id);
     }
 }

@@ -4,6 +4,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ItemRepository {
     Item create(Long userId, Item item);
@@ -12,9 +13,9 @@ public interface ItemRepository {
 
     List<Item> findAllItems();
 
-    Item findItemById(Long id);
+    Optional<Item> findItemById(Long id);
 
-    List<ItemDto> findItemByQuery(String query);
+    List<ItemDto> findItemsByQuery(String query);
 
-    void deleteItemsById(Long id);
+    void deleteItemById(Long id);
 }

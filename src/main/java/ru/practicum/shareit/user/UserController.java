@@ -3,6 +3,7 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -17,6 +18,9 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDto> create(@Valid @RequestBody UserDto userDto) {
+        if (userDto.getEmail().isBlank() || !userDto.getEmail().contains("@")) {
+            throw new BadRequestException("Email cannot be empty and must contain @");
+        }
         return ResponseEntity.ok(userService.create(userDto));
     }
 

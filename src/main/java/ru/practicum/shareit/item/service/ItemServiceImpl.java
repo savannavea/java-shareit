@@ -10,7 +10,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.service.UserService;
 
-import javax.validation.ValidationException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,21 +31,17 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto update(Long userId, ItemDto itemDto, Long id) {
         userService.getUserById(userId);
-        Item item = itemRepository.findItemById(id);
+        Item item = itemRepository
+                .findItemById(id)
+                .orElseThrow(() -> new NotFoundException("Item's id %d doesn't found!" + id));
         Long ownerId = item.getOwner().getId();
         if (!userId.equals(ownerId)) {
             throw new NotFoundException(String.format("User with id %d does not own item with id %d", userId, id));
         }
         if (itemDto.getName() != null) {
-            if (itemDto.getName().isBlank()) {
-                throw new ValidationException("Name cannot be empty");
-            }
             item.setName(itemDto.getName());
         }
         if (itemDto.getDescription() != null) {
-            if (itemDto.getDescription().isBlank()) {
-                throw new ValidationException("Description cannot be empty");
-            }
             item.setDescription(itemDto.getDescription());
         }
         if (itemDto.getAvailable() != null) {
@@ -57,7 +52,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getById(Long id) {
-        return ItemMapper.toItemDto(itemRepository.findItemById(id));
+        return itemRepository.findItemById(id)
+                .map(ItemMapper::toItemDto)
+                .orElseThrow(() -> new NotFoundException("Item's id %d doesn't found!" + id));
     }
 
     @Override
@@ -76,11 +73,11 @@ public class ItemServiceImpl implements ItemService {
         if (query.isBlank()) {
             return Collections.emptyList();
         }
-        return itemRepository.findItemByQuery(query);
+        return itemRepository.findItemsByQuery(query);
     }
 
     @Override
     public void deleteItemsById(Long id) {
-        itemRepository.deleteItemsById(id);
+        itemRepository.deleteItemById(id);
     }
 }
