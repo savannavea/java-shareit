@@ -6,14 +6,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.enums.State;
+import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.booking.enums.State;
-import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -23,8 +23,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-
 
 
 @Slf4j
@@ -37,25 +35,29 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+
     @Override
     public BookingDto create(Long userId, BookingDto bookingDto) {
         Booking booking = BookingMapper.toBooking(bookingDto);
-        User user = checkUser(userId);
+        User user = getUserOrElseThrow(userId);
         booking.setBooker(user);
-        Item item = checkItem(bookingDto.getItemId());
-
+        Item item = getItemOrElseThrow(bookingDto.getItemId());
         booking.setItem(item);
-        booking.setStatus(Status.WAITING);
 
+        if (!booking.getItem().getAvailable()) {
+            throw new BadRequestException("Item is not available");
+        }
+
+        booking.setStatus(Status.WAITING);
         return BookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
     @Override
     public BookingDto approve(Long userId, Long bookingId, String approved) {
-        checkUser(userId);
-        Booking booking = checkBooking(bookingId);
+        getUserOrElseThrow(userId);
+        Booking booking = getBookingOrElseThrow(bookingId);
 
-        if(booking.getItem().getOwner().getId() != userId) {
+        if (booking.getItem().getOwner().getId() != userId) {
             throw new NotFoundException("Id of the user's item does not match the id of the owner of the item");
         }
         if (!booking.getStatus().equals(Status.WAITING)) {
@@ -78,8 +80,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto getById(Long bookingId, Long userId) {
-        Booking booking = checkBooking(bookingId);
-        if(booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
+        Booking booking = getBookingOrElseThrow(bookingId);
+        if (booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
             return BookingMapper.toBookingDto(booking);
         } else {
             throw new NotFoundException("This user cannot view booking information");
@@ -88,7 +90,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getUserBookings(Long userId, State state) {
-        checkUser(userId);
+        getUserOrElseThrow(userId);
         List<Booking> bookings = bookingRepository.findByBooker_Id(userId);
         LocalDateTime time = LocalDateTime.now();
 
@@ -126,7 +128,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getItemsBookings(Long userId, State state) {
-        checkUser(userId);
+        getUserOrElseThrow(userId);
         List<Booking> bookings;
         LocalDateTime time = LocalDateTime.now();
         switch (state) {
@@ -163,19 +165,19 @@ public class BookingServiceImpl implements BookingService {
         return result;
     }
 
-    private User checkUser(Long userId) {
+    private User getUserOrElseThrow(Long userId) {
         return userRepository
                 .findById(userId)
                 .orElseThrow(() -> new NotFoundException("User's id %d doesn't found!" + userId));
     }
 
-    private Item checkItem(Long itemId) {
+    private Item getItemOrElseThrow(Long itemId) {
         return itemRepository
                 .findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Item's id %d doesn't found!" + itemId));
     }
 
-    private Booking checkBooking(Long bookingId) {
+    private Booking getBookingOrElseThrow(Long bookingId) {
         return bookingRepository
                 .findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Item's id %d doesn't found!" + bookingId));
