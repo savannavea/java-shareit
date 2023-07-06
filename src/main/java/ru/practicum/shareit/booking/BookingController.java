@@ -43,14 +43,14 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> returnUserBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                               @RequestParam(defaultValue = "ALL") State state) {
-        return bookingService.getUserBookings(userId, state);
+                                               @RequestParam(defaultValue = "ALL") String state) {
+        return bookingService.getUserBookings(userId, validateState(state));
     }
 
     @GetMapping("/owner")
     public List<BookingDto> returnItemsBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                @RequestParam(defaultValue = "ALL") State state) {
-        return bookingService.getItemsBookings(userId, state);
+                                                @RequestParam(defaultValue = "ALL") String state) {
+        return bookingService.getItemsBookings(userId, validateState(state));
     }
 
     private static void validateDate(BookingDto bookingDto) {
@@ -64,5 +64,16 @@ public class BookingController {
         ) {
             throw new BadRequestException("Invalid booking dates");
         }
+    }
+
+    private State validateState(String state) {
+        State stateEnum;
+        try {
+            stateEnum = State.valueOf(state);
+
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Unknown state: " + state);
+        }
+        return stateEnum;
     }
 }

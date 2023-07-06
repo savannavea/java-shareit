@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking;
 
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.user.UserMapper;
 
 public class BookingMapper {
     public static BookingDto toBookingDto(Booking booking) {
@@ -11,7 +13,8 @@ public class BookingMapper {
                 .end(booking.getEnd())
                 .status(booking.getStatus())
                 .itemId(booking.getItem().getId())
-                //.bookerId(booking.getBooker().getId())
+                .booker(UserMapper.toUserDto(booking.getBooker()))
+                .item(ItemMapper.toItemDto(booking.getItem()))
                 .build();
     }
 

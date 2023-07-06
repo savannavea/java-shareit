@@ -43,7 +43,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setBooker(user);
         Item item = getItemOrElseThrow(bookingDto.getItemId());
         booking.setItem(item);
-
+        //userIsOwnerOfItem(userId, item);
         if (!booking.getItem().getAvailable()) {
             throw new BadRequestException("Item is not available");
         }
@@ -56,12 +56,13 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto approve(Long userId, Long bookingId, String approved) {
         getUserOrElseThrow(userId);
         Booking booking = getBookingOrElseThrow(bookingId);
-
+        //Item item = booking.getItem();
+        //userIsOwnerOfItem(userId, item);
         if (booking.getItem().getOwner().getId() != userId) {
             throw new NotFoundException("Id of the user's item does not match the id of the owner of the item");
         }
         if (!booking.getStatus().equals(Status.WAITING)) {
-            throw new IllegalArgumentException("The status has been confirmed by the owner before");
+            throw new BadRequestException("The status has been confirmed by the owner before");
         }
 
         try {
@@ -92,6 +93,7 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> getUserBookings(Long userId, State state) {
         getUserOrElseThrow(userId);
         List<Booking> bookings = bookingRepository.findByBooker_Id(userId);
+
         LocalDateTime time = LocalDateTime.now();
 
         switch (state) {
@@ -181,5 +183,14 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository
                 .findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Item's id %d doesn't found!" + bookingId));
+    }
+
+    private void userIsOwnerOfItem(Long userId, Item item) {
+        Long ownerId = item.getOwner().getId();
+
+        if (!ownerId.equals(userId)) {
+            throw new NotFoundException(String.format(
+                    "User with id %d owner of item with id %d", userId, item.getId()));
+        }
     }
 }
