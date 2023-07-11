@@ -14,6 +14,7 @@ public class BookingMapper {
 
     private static final ZoneId ZONE_ID = ZoneId.systemDefault();
     private static final ZoneOffset ZONE_OFFSET = OffsetDateTime.now().getOffset();
+
     public static BookingDto toBookingDto(Booking booking) {
         LocalDateTime start = LocalDateTime.ofInstant(booking.getStart(), ZONE_ID);
         LocalDateTime end = LocalDateTime.ofInstant(booking.getEnd(), ZONE_ID);
