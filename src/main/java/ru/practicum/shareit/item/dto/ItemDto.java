@@ -1,10 +1,14 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -24,6 +28,11 @@ public class ItemDto {
     @NotNull
     private Boolean available;
 
-   // private Long requestId;
+    private Long ownerId;
 
+    private ItemOwnerDto lastBooking;
+
+    private ItemOwnerDto nextBooking;
+
+    private List<CommentDto> comments;
 }

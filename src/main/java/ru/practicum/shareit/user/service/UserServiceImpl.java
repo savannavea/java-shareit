@@ -24,7 +24,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto create(UserDto userDto) {
         log.info("Got request to create user {}", userDto);
-       // checkEmailDuplicate(UserMapper.toUser(userDto));
         return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
@@ -33,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository
                 .findById(id)
-                .orElseThrow(() -> new NotFoundException("User's id %d doesn't found!" + id));
+                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", id)));
 
         if (userDto.getName() != null) {
             user.setName(userDto.getName());
@@ -65,7 +64,7 @@ public class UserServiceImpl implements UserService {
         return userRepository
                 .findById(id)
                 .map(UserMapper::toUserDto)
-                .orElseThrow(() -> new NotFoundException("User's id %d doesn't found!" + id));
+                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", id)));
     }
 
     @Override
@@ -75,8 +74,8 @@ public class UserServiceImpl implements UserService {
 
     private void checkEmailDuplicate(User user) {
         List<User> listAllUsers = userRepository.findAll();
-        for (User owner : listAllUsers){
-            if(!(Objects.equals(owner.getId(), user.getId())) && Objects.equals(owner.getEmail(), user.getEmail()))
+        for (User owner : listAllUsers) {
+            if (!(Objects.equals(owner.getId(), user.getId())) && Objects.equals(owner.getEmail(), user.getEmail()))
                 throw new ConflictException(
                         String.format("User with email address: %s already registered", user.getEmail()));
         }

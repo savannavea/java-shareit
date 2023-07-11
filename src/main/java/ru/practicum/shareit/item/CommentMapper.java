@@ -3,8 +3,11 @@ package ru.practicum.shareit.item;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.model.Comment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CommentMapper {
-    public static CommentDto tocommentDto(Comment comment) {
+    public static CommentDto toCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
@@ -18,5 +21,14 @@ public class CommentMapper {
                 .id(commentDto.getId())
                 .text(commentDto.getText())
                 .build();
+    }
+
+    public static List<CommentDto> toICommentDtoList(Iterable<Comment> comments) {
+        List<CommentDto> result = new ArrayList<>();
+
+        for (Comment comment : comments) {
+            result.add(toCommentDto(comment));
+        }
+        return result;
     }
 }

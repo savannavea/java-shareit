@@ -30,20 +30,21 @@ public class ItemController {
     }
 
     @PatchMapping("/{id}")
-    public ItemDto update(@Valid @RequestHeader("X-Sharer-User-Id") Long userId,
+    public ItemDto update(@RequestHeader("X-Sharer-User-Id") Long userId,
                           @RequestBody ItemDto itemDto,
                           @PathVariable("id") Long id) {
         return itemService.update(userId, itemDto, id);
     }
 
     @GetMapping("/{id}")
-    public ItemDto findById(@PathVariable("id") Long id) {
-        return itemService.getById(id);
+    public ItemDto findById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                            @PathVariable("id") Long id) {
+        return itemService.getById(userId, id);
     }
 
     @GetMapping
     public List<ItemDto> findAllByUserId(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.findAllByUserId(userId);
+        return itemService.getAllByUserId(userId);
     }
 
     @GetMapping("/search")

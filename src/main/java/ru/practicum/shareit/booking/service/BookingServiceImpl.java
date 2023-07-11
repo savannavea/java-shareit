@@ -21,8 +21,8 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 
 @Slf4j
@@ -38,27 +38,30 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto create(Long userId, BookingDto bookingDto) {
+
         Booking booking = BookingMapper.toBooking(bookingDto);
         User user = getUserOrElseThrow(userId);
         booking.setBooker(user);
         Item item = getItemOrElseThrow(bookingDto.getItemId());
         booking.setItem(item);
-        //userIsOwnerOfItem(userId, item);
+
         if (!booking.getItem().getAvailable()) {
             throw new BadRequestException("Item is not available");
         }
-
+        if (item.getOwner().getId().equals(booking.getBooker().getId())) {
+            throw new NotFoundException("Бронирование не найдено");
+        }
         booking.setStatus(Status.WAITING);
         return BookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
     @Override
     public BookingDto approve(Long userId, Long bookingId, String approved) {
+
         getUserOrElseThrow(userId);
         Booking booking = getBookingOrElseThrow(bookingId);
-        //Item item = booking.getItem();
-        //userIsOwnerOfItem(userId, item);
-        if (booking.getItem().getOwner().getId() != userId) {
+
+        if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             throw new NotFoundException("Id of the user's item does not match the id of the owner of the item");
         }
         if (!booking.getStatus().equals(Status.WAITING)) {
@@ -81,8 +84,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto getById(Long bookingId, Long userId) {
+
         Booking booking = getBookingOrElseThrow(bookingId);
-        if (booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
+
+        if (Objects.equals(booking.getBooker().getId(), userId)
+                || Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             return BookingMapper.toBookingDto(booking);
         } else {
             throw new NotFoundException("This user cannot view booking information");
@@ -114,10 +120,12 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByBooker_IdAndStatus(userId, Status.REJECTED, SORT);
                 break;
             default:
-                Collections.sort(bookings, (booking1, booking2) -> booking2.getStart().compareTo(booking1.getStart()));
+                bookings.sort((booking1, booking2) -> booking2.getStart().compareTo(booking1.getStart()));
                 break;
         }
+
         List<BookingDto> result = new ArrayList<>();
+
         for (Booking booking : bookings) {
             BookingDto bookingDto = BookingMapper.toBookingDto(booking);
             bookingDto.setItem(ItemMapper.toItemDto(booking.getItem()));
@@ -130,9 +138,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getItemsBookings(Long userId, State state) {
+
         getUserOrElseThrow(userId);
         List<Booking> bookings;
         LocalDateTime time = LocalDateTime.now();
+
         switch (state) {
             case PAST:
                 bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(userId, time, SORT);
@@ -157,6 +167,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         List<BookingDto> result = new ArrayList<>();
+
         for (Booking booking : bookings) {
             var bookingDto = BookingMapper.toBookingDto(booking);
             bookingDto.setItem(ItemMapper.toItemDto(booking.getItem()));
@@ -170,27 +181,18 @@ public class BookingServiceImpl implements BookingService {
     private User getUserOrElseThrow(Long userId) {
         return userRepository
                 .findById(userId)
-                .orElseThrow(() -> new NotFoundException("User's id %d doesn't found!" + userId));
+                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", userId)));
     }
 
     private Item getItemOrElseThrow(Long itemId) {
         return itemRepository
                 .findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Item's id %d doesn't found!" + itemId));
+                .orElseThrow(() -> new NotFoundException(String.format("Item's id %d doesn't found!", itemId)));
     }
 
     private Booking getBookingOrElseThrow(Long bookingId) {
         return bookingRepository
                 .findById(bookingId)
-                .orElseThrow(() -> new NotFoundException("Item's id %d doesn't found!" + bookingId));
-    }
-
-    private void userIsOwnerOfItem(Long userId, Item item) {
-        Long ownerId = item.getOwner().getId();
-
-        if (!ownerId.equals(userId)) {
-            throw new NotFoundException(String.format(
-                    "User with id %d owner of item with id %d", userId, item.getId()));
-        }
+                .orElseThrow(() -> new NotFoundException(String.format("Item's id %d doesn't found!", bookingId)));
     }
 }

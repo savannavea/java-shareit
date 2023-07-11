@@ -27,7 +27,6 @@ public class BookingController {
         return bookingService.create(userId, bookingDto);
     }
 
-
     @PatchMapping("/{bookingId}")
     public BookingDto approve(@RequestHeader("X-Sharer-User-Id") Long userId,
                               @PathVariable Long bookingId,
@@ -36,20 +35,20 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto returnById(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                 @PathVariable Long bookingId) {
+    public BookingDto findById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                               @PathVariable Long bookingId) {
         return bookingService.getById(bookingId, userId);
     }
 
     @GetMapping
-    public List<BookingDto> returnUserBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                               @RequestParam(defaultValue = "ALL") String state) {
+    public List<BookingDto> findUserBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                             @RequestParam(defaultValue = "ALL") String state) {
         return bookingService.getUserBookings(userId, validateState(state));
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> returnItemsBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                @RequestParam(defaultValue = "ALL") String state) {
+    public List<BookingDto> findItemsBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                              @RequestParam(defaultValue = "ALL") String state) {
         return bookingService.getItemsBookings(userId, validateState(state));
     }
 
