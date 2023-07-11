@@ -19,7 +19,7 @@ import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -100,7 +100,7 @@ public class BookingServiceImpl implements BookingService {
         getUserOrElseThrow(userId);
         List<Booking> bookings = bookingRepository.findByBooker_Id(userId);
 
-        LocalDateTime time = LocalDateTime.now();
+        Instant time = Instant.now();
 
         switch (state) {
             case PAST:
@@ -141,7 +141,7 @@ public class BookingServiceImpl implements BookingService {
 
         getUserOrElseThrow(userId);
         List<Booking> bookings;
-        LocalDateTime time = LocalDateTime.now();
+        Instant time = Instant.now();
 
         switch (state) {
             case PAST:

@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "bookings")
@@ -34,8 +34,8 @@ public class Booking {
     private Status status;
 
     @Column(name = "starts")
-    private LocalDateTime start;
+    private Instant start;
 
     @Column(name = "ends")
-    private LocalDateTime end;
+    private Instant end;
 }

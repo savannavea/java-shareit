@@ -22,6 +22,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -90,9 +91,9 @@ public class ItemServiceImpl implements ItemService {
         if (Objects.equals(item.getOwner().getId(), userId)) {
 
             Optional<Booking> lastBooking = bookingRepository
-                    .findFirstByItemIdAndStatusAndStartBeforeOrderByStartDesc(id, Status.APPROVED, LocalDateTime.now());
+                    .findFirstByItemIdAndStatusAndStartBeforeOrderByStartDesc(id, Status.APPROVED, Instant.now());
             Optional<Booking> nextBooking = bookingRepository
-                    .findFirstByItemIdAndStatusAndStartAfterOrderByStartAsc(id, Status.APPROVED, LocalDateTime.now());
+                    .findFirstByItemIdAndStatusAndStartAfterOrderByStartAsc(id, Status.APPROVED, Instant.now());
 
             if (lastBooking.isPresent()) {
                 itemDto.setLastBooking(BookingMapper.toBookingItemDto(lastBooking.get()));
@@ -171,20 +172,20 @@ public class ItemServiceImpl implements ItemService {
 
     private ItemOwnerDto getLastBooking(Item item) {
         return bookingRepository
-                .findLastBooking(item.getId(), LocalDateTime.now())
+                .findLastBooking(item.getId(), Instant.now())
                 .map(BookingMapper::toBookingItemDto)
                 .orElse(null);
     }
 
     private ItemOwnerDto getNextBooking(Item item) {
         return bookingRepository
-                .findNextBooking(item.getId(), LocalDateTime.now())
+                .findNextBooking(item.getId(), Instant.now())
                 .map(BookingMapper::toBookingItemDto)
                 .orElse(null);
     }
 
     private void checkBooker(Long userId, Long itemId) {
-        LocalDateTime dateTime = LocalDateTime.now();
+        Instant dateTime = Instant.now();
         Optional<Booking> booking = bookingRepository.findFirstByItemIdAndBookerIdAndStatusAndEndBefore(itemId,
                 userId, Status.APPROVED, dateTime);
 
