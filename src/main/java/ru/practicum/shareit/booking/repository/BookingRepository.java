@@ -36,13 +36,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByItemOwnerIdOrderByStartDesc(Long ownerId);
 
     Optional<Booking> findFirstByItemIdAndStatusAndStartAfterOrderByStartAsc(Long itemId, Status status,
-                                                                             Instant dateTime);
+                                                                             Instant now);
 
     Optional<Booking> findFirstByItemIdAndStatusAndStartBeforeOrderByStartDesc(Long itemId, Status status,
-                                                                               Instant dateTime);
+                                                                               Instant now);
 
     Optional<Booking> findFirstByItemIdAndBookerIdAndStatusAndEndBefore(Long itemId, Long bookerId, Status status,
-                                                                        Instant dateTime);
+                                                                        Instant now);
 
     @Query(value = "SELECT * FROM bookings b JOIN items i ON i.id = b.item_id "
             + "WHERE b.item_id = :itemId AND b.ends < :currentTime ORDER BY b.ends ASC LIMIT 1",

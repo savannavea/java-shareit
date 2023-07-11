@@ -13,15 +13,15 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findAllByOwnerIdOrderByIdAsc(Long ownerId);
 
-    @Query("select i from Item i " +
-            "where upper(i.name) like upper(concat('%', ?1, '%')) " +
-            " or upper(i.description) like upper(concat('%', ?1, '%'))" +
-            "and i.available=true")
+    @Query("SELECT i FROM Item i " +
+            "WHERE UPPER(i.name) LIKE UPPER(CONCAT('%', ?1, '%')) " +
+            " OR UPPER(i.description) LIKE UPPER(CONCAT('%', ?1, '%'))" +
+            "AND i.available=TRUE")
     List<Item> findItemsByQuery(String text);
 
-    @Query("select u.id " +
-            "from Item as it " +
-            "join it.owner as u " +
-            "where it.id = ?1")
-    Optional<Long> findOwnerIdByItemId(long itemId);
+    @Query("SELECT u.id " +
+            "FROM Item AS it " +
+            "JOIN it.owner AS u " +
+            "WHERE it.id = ?1")
+    Optional<Long> findOwnerIdByItemId(Long itemId);
 }
