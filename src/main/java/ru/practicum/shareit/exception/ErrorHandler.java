@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
 
 @RestControllerAdvice
 @Slf4j
@@ -28,9 +29,10 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleException(final Exception e) {
-        return new ErrorResponse(String.format("general exception", e.getMessage()));
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)public ErrorResponse handleException(final Exception e) {
+        //return new ErrorResponse(String.format("general exception", e.getMessage()));
+        return new ErrorResponse(String.format("general exception" + " msg: " + e.getMessage() +
+                " stacktrace: " + Arrays.toString(e.getStackTrace()), e.getMessage()));
     }
 
     @ExceptionHandler
