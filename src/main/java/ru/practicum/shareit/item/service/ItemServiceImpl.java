@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -41,7 +42,6 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final UserService userService;
 
-    @Transactional
     @Override
     public ItemDto create(Long userId, ItemDto itemDto) {
         User user = getUserOrElseThrow(userId);
@@ -49,7 +49,6 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
-    @Transactional
     @Override
     public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
         User user = getUserOrElseThrow(userId);
@@ -62,7 +61,6 @@ public class ItemServiceImpl implements ItemService {
         return CommentMapper.toCommentDto(commentRepository.save(comment));
     }
 
-    @Transactional
     @Override
     public ItemDto update(Long userId, ItemDto itemDto, Long id) {
         getUserOrElseThrow(userId);
@@ -147,7 +145,6 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     @Override
     public void deleteItemsById(Long id) {
         itemRepository.deleteById(id);

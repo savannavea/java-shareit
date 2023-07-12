@@ -29,6 +29,7 @@ import java.util.Objects;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BookingServiceImpl implements BookingService {
 
     private static final Sort SORT = Sort.by(Sort.Direction.DESC, "start");
@@ -37,7 +38,6 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
-    @Transactional
     @Override
     public BookingDto create(Long userId, BookingDto bookingDto) {
 
@@ -57,7 +57,6 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
-    @Transactional
     @Override
     public BookingDto approve(Long userId, Long bookingId, String approved) {
 
