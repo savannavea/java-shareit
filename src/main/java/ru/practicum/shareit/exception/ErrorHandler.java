@@ -29,7 +29,8 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)public ErrorResponse handleException(final Exception e) {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleException(final Exception e) {
         //return new ErrorResponse(String.format("general exception", e.getMessage()));
         return new ErrorResponse(String.format("general exception" + " msg: " + e.getMessage() +
                 " stacktrace: " + Arrays.toString(e.getStackTrace()), e.getMessage()));
