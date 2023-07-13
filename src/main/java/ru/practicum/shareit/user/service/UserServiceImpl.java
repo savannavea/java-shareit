@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.UserMapper;
@@ -11,11 +12,13 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -23,26 +26,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto create(UserDto userDto) {
         log.info("Got request to create user {}", userDto);
-        checkEmailDuplicate(userDto.getEmail());
-        return UserMapper.toUserDto(userRepository.create(UserMapper.toUser(userDto)));
+        return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
     @Override
     public UserDto update(UserDto userDto, Long id) {
 
-        User user = UserMapper.toUser(getUserById(id));
+        User user = userRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", id)));
 
         if (userDto.getName() != null) {
             user.setName(userDto.getName());
         }
         if (userDto.getEmail() != null && !user.getEmail().equals(userDto.getEmail())) {
-            checkEmailDuplicate(userDto.getEmail());
+            checkEmailDuplicate(user);
         }
         if (userDto.getEmail() != null) {
             user.setEmail(userDto.getEmail());
         }
 
-        User userUpdated = userRepository.update(user, id);
+        User userUpdated = userRepository.save(user);
 
         log.info("User updated: {}", userUpdated);
         return UserMapper.toUserDto(userUpdated);
@@ -60,20 +64,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Long id) {
         return userRepository
-                .findUserById(id)
+                .findById(id)
                 .map(UserMapper::toUserDto)
-                .orElseThrow(() -> new NotFoundException("User's id %d doesn't found!" + id));
+                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", id)));
     }
 
     @Override
     public void deleteUsersById(Long id) {
-        userRepository.deleteUsersById(id);
+        userRepository.deleteById(id);
     }
 
-    private void checkEmailDuplicate(String email) {
-        if (userRepository.emailExist(email)) {
-            throw new ConflictException(
-                    String.format("User with email address: %s already registered", email));
+    private void checkEmailDuplicate(User user) {
+        List<User> listAllUsers = userRepository.findAll();
+        for (User owner : listAllUsers) {
+            if (!(Objects.equals(owner.getId(), user.getId())) && Objects.equals(owner.getEmail(), user.getEmail()))
+                throw new ConflictException(
+                        String.format("User with email address: %s already registered", user.getEmail()));
         }
     }
 }

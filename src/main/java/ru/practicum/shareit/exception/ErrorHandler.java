@@ -18,7 +18,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationError(final BadRequestException e) {
-        return new ErrorResponse(String.format("validation error", e.getMessage()));
+        return new ErrorResponse(String.format(e.getMessage()));
     }
 
     @ExceptionHandler
@@ -51,6 +51,12 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleEmailExistingException(final ConflictException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException exception) {
         return new ErrorResponse(exception.getMessage());
     }
 }
