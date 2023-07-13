@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.State;
-import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.BadRequestException;
@@ -25,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static ru.practicum.shareit.booking.enums.Status.*;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,7 +33,7 @@ import java.util.Objects;
 @Transactional
 public class BookingServiceImpl implements BookingService {
 
-    private static final Sort SORT = Sort.by(Sort.Direction.DESC, "start");
+    private static final Sort DEFAULT_SORT = Sort.by(Sort.Direction.DESC, "start");
 
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
@@ -53,7 +54,7 @@ public class BookingServiceImpl implements BookingService {
         if (item.getOwner().getId().equals(booking.getBooker().getId())) {
             throw new NotFoundException("Бронирование не найдено");
         }
-        booking.setStatus(Status.WAITING);
+        booking.setStatus(WAITING);
         return BookingMapper.toBookingDto(bookingRepository.save(booking));
     }
 
@@ -66,17 +67,14 @@ public class BookingServiceImpl implements BookingService {
         if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             throw new NotFoundException("Id of the user's item does not match the id of the owner of the item");
         }
-        if (!booking.getStatus().equals(Status.WAITING)) {
+        if (!booking.getStatus().equals(WAITING)) {
             throw new BadRequestException("The status has been confirmed by the owner before");
         }
 
         try {
             boolean isApprove = Boolean.parseBoolean(approved);
-            if (isApprove) {
-                booking.setStatus(Status.APPROVED);
-            } else {
-                booking.setStatus(Status.REJECTED);
-            }
+            booking.setStatus(isApprove ? APPROVED : REJECTED);
+
             booking = bookingRepository.save(booking);
         } catch (Exception e) {
             throw new BadRequestException("Invalid approve parameter");
@@ -106,20 +104,20 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case PAST:
-                bookings = bookingRepository.findByBooker_IdAndEndIsBefore(userId, time, SORT);
+                bookings = bookingRepository.findByBooker_IdAndEndIsBefore(userId, time, DEFAULT_SORT);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findByBooker_IdAndStartIsAfter(userId, time, SORT);
+                bookings = bookingRepository.findByBooker_IdAndStartIsAfter(userId, time, DEFAULT_SORT);
                 break;
             case CURRENT:
                 bookings = bookingRepository.findByBooker_IdAndStartIsBeforeAndEndIsAfter(userId,
-                        time, time, SORT);
+                        time, time, DEFAULT_SORT);
                 break;
             case WAITING:
-                bookings = bookingRepository.findByBooker_IdAndStatus(userId, Status.WAITING, SORT);
+                bookings = bookingRepository.findByBooker_IdAndStatus(userId, WAITING, DEFAULT_SORT);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findByBooker_IdAndStatus(userId, Status.REJECTED, SORT);
+                bookings = bookingRepository.findByBooker_IdAndStatus(userId, REJECTED, DEFAULT_SORT);
                 break;
             default:
                 bookings.sort((booking1, booking2) -> booking2.getStart().compareTo(booking1.getStart()));
@@ -147,21 +145,21 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case PAST:
-                bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(userId, time, SORT);
+                bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(userId, time, DEFAULT_SORT);
                 break;
             case FUTURE:
 
-                bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(userId, time, SORT);
+                bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(userId, time, DEFAULT_SORT);
                 break;
             case CURRENT:
                 bookings = bookingRepository.findByItemOwnerIdAndStartIsBeforeAndEndIsAfter(userId,
-                        time, time, SORT);
+                        time, time, DEFAULT_SORT);
                 break;
             case WAITING:
-                bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, Status.WAITING, SORT);
+                bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, WAITING, DEFAULT_SORT);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, Status.REJECTED, SORT);
+                bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, REJECTED, DEFAULT_SORT);
                 break;
             default:
                 bookings = bookingRepository.findByItemOwnerIdOrderByStartDesc(userId);
