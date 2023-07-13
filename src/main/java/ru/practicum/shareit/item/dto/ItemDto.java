@@ -19,7 +19,7 @@ public class ItemDto {
     private Long id;
 
     @NotBlank
-    @Size(max = 200)
+    @Size(max = 255)
     private String name;
 
     @NotBlank
