@@ -31,7 +31,7 @@ public class ItemRequestController {
 
     }
 
-    @GetMapping("/{all}")
+    @GetMapping("/all")
     public List<ItemRequestDto> findAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                 @RequestParam(value = "from", required = false, defaultValue = "0")
                                                 @Min(0) Integer from,
@@ -43,7 +43,7 @@ public class ItemRequestController {
 
     @GetMapping("/{requestId}")
     public ItemRequestDto findById(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                   @PathVariable Long requestId) {
+                                   @PathVariable("requestId") Long requestId) {
         return itemRequestService.getById(userId, requestId);
 
     }
