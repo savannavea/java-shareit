@@ -7,6 +7,7 @@ import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -18,6 +19,7 @@ public class ItemMapper {
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
+                .requestId(item.getItemRequest() == null ? 0 : item.getItemRequest().getId())
                 .build();
     }
 
@@ -28,18 +30,35 @@ public class ItemMapper {
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
         item.setOwner(owner);
+        item.setItemRequest(item.getItemRequest());
         return item;
     }
 
     public static ItemDto toItemDto(Item item, ItemOwnerDto lastBooking,
                                     ItemOwnerDto nextBooking, List<CommentDto> commentDtos) {
-        return new ItemDto(item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getOwner().getId(),
-                lastBooking,
-                nextBooking,
-                commentDtos);
+        ItemDto itemDto = ItemDto
+                .builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .ownerId(item.getOwner().getId())
+                .lastBooking(lastBooking)
+                .nextBooking(nextBooking)
+                .comments(commentDtos)
+                .build();
+        if (item.getItemRequest() != null) {
+            itemDto.setRequestId(item.getItemRequest().getId());
+        }
+        return itemDto;
+    }
+
+    public static List<ItemDto> toItemDtoList(Iterable<Item> items) {
+        List<ItemDto> result = new ArrayList<>();
+
+        for (Item item : items) {
+            result.add(toItemDto(item));
+        }
+        return result;
     }
 }
