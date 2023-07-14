@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,28 +97,28 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getUserBookings(Long userId, State state) {
+    public List<BookingDto> getUserBookings(Long userId, State state, Integer from, Integer size) {
         getUserOrElseThrow(userId);
         List<Booking> bookings = bookingRepository.findByBooker_Id(userId);
-
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
         Instant time = Instant.now();
 
         switch (state) {
             case PAST:
-                bookings = bookingRepository.findByBooker_IdAndEndIsBefore(userId, time, DEFAULT_SORT);
+                bookings = bookingRepository.findByBooker_IdAndEndIsBefore(userId, time, page);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findByBooker_IdAndStartIsAfter(userId, time, DEFAULT_SORT);
+                bookings = bookingRepository.findByBooker_IdAndStartIsAfter(userId, time, page);
                 break;
             case CURRENT:
                 bookings = bookingRepository.findByBooker_IdAndStartIsBeforeAndEndIsAfter(userId,
-                        time, time, DEFAULT_SORT);
+                        time, time, page);
                 break;
             case WAITING:
-                bookings = bookingRepository.findByBooker_IdAndStatus(userId, WAITING, DEFAULT_SORT);
+                bookings = bookingRepository.findByBooker_IdAndStatus(userId, WAITING, page);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findByBooker_IdAndStatus(userId, REJECTED, DEFAULT_SORT);
+                bookings = bookingRepository.findByBooker_IdAndStatus(userId, REJECTED, page);
                 break;
             default:
                 bookings.sort((booking1, booking2) -> booking2.getStart().compareTo(booking1.getStart()));
@@ -137,29 +138,30 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getItemsBookings(Long userId, State state) {
+    public List<BookingDto> getItemsBookings(Long userId, State state, Integer from, Integer size) {
 
         getUserOrElseThrow(userId);
         List<Booking> bookings;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
         Instant time = Instant.now();
 
         switch (state) {
             case PAST:
-                bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(userId, time, DEFAULT_SORT);
+                bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(userId, time, page);
                 break;
             case FUTURE:
 
-                bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(userId, time, DEFAULT_SORT);
+                bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(userId, time, page);
                 break;
             case CURRENT:
                 bookings = bookingRepository.findByItemOwnerIdAndStartIsBeforeAndEndIsAfter(userId,
-                        time, time, DEFAULT_SORT);
+                        time, time, page);
                 break;
             case WAITING:
-                bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, WAITING, DEFAULT_SORT);
+                bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, WAITING, page);
                 break;
             case REJECTED:
-                bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, REJECTED, DEFAULT_SORT);
+                bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, REJECTED, page);
                 break;
             default:
                 bookings = bookingRepository.findByItemOwnerIdOrderByStartDesc(userId);

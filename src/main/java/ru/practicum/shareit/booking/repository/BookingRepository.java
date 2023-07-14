@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking.repository;
 
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,23 +13,23 @@ import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findByBooker_IdAndEndIsBefore(Long bookerId, Instant end, Sort sort);
+    List<Booking> findByBooker_IdAndEndIsBefore(Long bookerId, Instant end, Pageable page);
 
-    List<Booking> findByBooker_IdAndStartIsAfter(Long bookerId, Instant starts, Sort sort);
+    List<Booking> findByBooker_IdAndStartIsAfter(Long bookerId, Instant starts, Pageable page);
 
-    List<Booking> findByBooker_IdAndStatus(Long bookerId, Status status, Sort sort);
+    List<Booking> findByBooker_IdAndStatus(Long bookerId, Status status, Pageable page);
 
     List<Booking> findByBooker_IdAndStartIsBeforeAndEndIsAfter(Long bookerId, Instant starts,
-                                                               Instant ends, Sort sort);
+                                                               Instant ends, Pageable page);
 
-    List<Booking> findByItemOwnerIdAndEndIsBefore(Long bookerId, Instant ends, Sort sort);
+    List<Booking> findByItemOwnerIdAndEndIsBefore(Long bookerId, Instant ends, Pageable page);
 
-    List<Booking> findByItemOwnerIdAndStartIsAfter(Long bookerId, Instant starts, Sort sort);
+    List<Booking> findByItemOwnerIdAndStartIsAfter(Long bookerId, Instant starts, Pageable page);
 
-    List<Booking> findByItemOwnerIdAndStatus(Long bookerId, Status status, Sort sort);
+    List<Booking> findByItemOwnerIdAndStatus(Long bookerId, Status status, Pageable page);
 
     List<Booking> findByItemOwnerIdAndStartIsBeforeAndEndIsAfter(Long bookerId, Instant starts,
-                                                                 Instant ends, Sort sort);
+                                                                 Instant ends, Pageable page);
 
     List<Booking> findByBooker_Id(Long bookerId);
 
