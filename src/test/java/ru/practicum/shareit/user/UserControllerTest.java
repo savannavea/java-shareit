@@ -39,7 +39,7 @@ public class UserControllerTest {
     User user;
 
     @BeforeEach
-    void setUp() {
+    void setUser() {
         user = User.builder()
                 .id(1L)
                 .name("Kate")
@@ -49,7 +49,7 @@ public class UserControllerTest {
 
     @SneakyThrows
     @Test
-    void addUser() {
+    void testCreateUser() {
         UserDto userToCreate = UserDto.builder()
                 .id(2L)
                 .name("Sofia")
@@ -72,7 +72,7 @@ public class UserControllerTest {
 
     @SneakyThrows
     @Test
-    void getUsers() {
+    void testGetUsers() {
         List<UserDto> userDtoList = List.of(UserDto.builder()
                 .email("@yandex.ru")
                 .build());
@@ -93,7 +93,7 @@ public class UserControllerTest {
 
     @SneakyThrows
     @Test
-    void updateUser() {
+    void testUpdateUser() {
         UserDto userToUdpate = UserDto.builder()
                 .name(null)
                 .email("@yandex.ru")
@@ -110,7 +110,7 @@ public class UserControllerTest {
 
     @SneakyThrows
     @Test
-    void getUserById() {
+    void testGetUserById() {
         mvc.perform(get("/users/{userId}", USER_ID))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -125,7 +125,7 @@ public class UserControllerTest {
 
     @SneakyThrows
     @Test
-    void deleteUser() {
+    void testDeleteUser() {
         mvc
                 .perform(delete("/users/{userId}", USER_ID))
                 .andExpect(status().isOk());
