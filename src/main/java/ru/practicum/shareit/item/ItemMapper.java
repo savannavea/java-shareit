@@ -13,14 +13,24 @@ import java.util.List;
 @Component
 public class ItemMapper {
 
-    public static ItemDto toItemDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .requestId(item.getItemRequest() == null ? 0 : item.getItemRequest().getId())
+    public static Item toItem(ItemDto itemDto) {
+        return Item.builder()
+                .id(itemDto.getId())
+                .name(itemDto.getName())
+                .description(itemDto.getDescription())
+                .available(itemDto.getAvailable() != null && itemDto.getAvailable())
                 .build();
+
+    }
+
+    public static ItemDto toItemDto(Item item) {
+    return ItemDto.builder()
+            .id(item.getId())
+            .name(item.getName())
+            .description(item.getDescription())
+            .available(item.getAvailable())
+            .requestId(item.getItemRequest() == null ? 0 : item.getItemRequest().getId())
+            .build();
     }
 
     public static Item toItemWithOwner(ItemDto itemDto, User owner) {
