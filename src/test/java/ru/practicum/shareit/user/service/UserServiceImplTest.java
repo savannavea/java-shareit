@@ -1,12 +1,10 @@
 package ru.practicum.shareit.user.service;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.UserMapper;
@@ -18,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -47,58 +46,49 @@ class UserServiceImplTest {
 
     @Test
     void testCreateUserOk() {
-        Mockito
-                .when(userRepository.save(expectedUser))
+        when(userRepository.save(expectedUser))
                 .thenReturn(expectedUser);
 
         UserDto returnedUser = userServiceimpl.create(UserMapper.toUserDto(expectedUser));
 
 
-        Assertions.assertEquals(TEST_ID, returnedUser.getId());
-        Assertions.assertEquals(TEST_NAME, returnedUser.getName());
-        Assertions.assertEquals(TEST_EMAIL, returnedUser.getEmail());
+        assertEquals(TEST_ID, returnedUser.getId());
+        assertEquals(TEST_NAME, returnedUser.getName());
+        assertEquals(TEST_EMAIL, returnedUser.getEmail());
 
-        Mockito
-                .verify(userRepository)
+        verify(userRepository)
                 .save(expectedUser);
     }
 
     @Test
     void testUpdateValidUser() {
-        Mockito
-                .when(userRepository.save(expectedUser))
+        when(userRepository.save(expectedUser))
                 .thenReturn(expectedUser);
-        Mockito
-                .when(userRepository.findById(expectedUser.getId()))
+        when(userRepository.findById(expectedUser.getId()))
                 .thenReturn(Optional.of(expectedUser));
 
         UserDto returnedUser = userServiceimpl.update(UserMapper.toUserDto(expectedUser), expectedUser.getId());
 
-        Assertions.assertEquals(UserMapper.toUser(returnedUser), expectedUser);
+        assertEquals(UserMapper.toUser(returnedUser), expectedUser);
 
-        Mockito
-                .verify(userRepository)
+        verify(userRepository)
                 .save(expectedUser);
-        Mockito
-                .verify(userRepository)
+        verify(userRepository)
                 .findById(expectedUser.getId());
     }
 
     @Test
     void testUpdateInvalidUser() {
-        Mockito
-                .when(userRepository.findById(anyLong()))
+        when(userRepository.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class, () ->
                 userServiceimpl.getUserById(expectedUser.getId()));
 
-        Assertions.assertEquals("User's id 1 doesn't found!", exception.getMessage());
-        Mockito
-                .verify(userRepository, never())
+        assertEquals("User's id 1 doesn't found!", exception.getMessage());
+        verify(userRepository, never())
                 .save(expectedUser);
-        Mockito
-                .verify(userRepository)
+        verify(userRepository)
                 .findById(expectedUser.getId());
 
     }
@@ -110,23 +100,24 @@ class UserServiceImplTest {
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
 
-        when(userRepository.findAll()).thenReturn(expectedUsers);
+        when(userRepository.findAll())
+                .thenReturn(expectedUsers);
 
         List<UserDto> actualUsersDto = userServiceimpl.getAll();
 
-        Assertions.assertEquals(1, actualUsersDto.size());
-        Assertions.assertEquals(expectedUserDto, actualUsersDto);
+
+        assertEquals(1, actualUsersDto.size());
+        assertEquals(expectedUserDto, actualUsersDto);
     }
 
     @Test
     void testGetUserById() {
-        Mockito
-                .when(userRepository.findById(expectedUser.getId()))
+        when(userRepository.findById(expectedUser.getId()))
                 .thenReturn(Optional.of(expectedUser));
 
         UserDto actualUser = userServiceimpl.getUserById(expectedUser.getId());
 
-        Assertions.assertEquals(UserMapper.toUser(actualUser), expectedUser);
+        assertEquals(UserMapper.toUser(actualUser), expectedUser);
 
     }
 
@@ -134,8 +125,7 @@ class UserServiceImplTest {
     void testDeleteUser() {
         userServiceimpl.deleteUsersById(anyLong());
 
-        Mockito
-                .verify(userRepository, times(1))
+        verify(userRepository, times(1))
                 .deleteById(anyLong());
     }
 }

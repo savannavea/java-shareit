@@ -2,10 +2,8 @@ package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -17,6 +15,7 @@ import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -55,8 +54,7 @@ public class UserControllerTest {
                 .name("Sofia")
                 .email("sofia@yandex.ru")
                 .build();
-        Mockito
-                .when(userService.create(userToCreate))
+        when(userService.create(userToCreate))
                 .thenReturn(userToCreate);
 
         String result = mvc.perform(post("/users")
@@ -67,7 +65,7 @@ public class UserControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        Assertions.assertEquals(objectMapper.writeValueAsString(userToCreate), result);
+        assertEquals(objectMapper.writeValueAsString(userToCreate), result);
     }
 
     @SneakyThrows
@@ -76,8 +74,7 @@ public class UserControllerTest {
         List<UserDto> userDtoList = List.of(UserDto.builder()
                 .email("@yandex.ru")
                 .build());
-        Mockito
-                .when(userService.getAll())
+        when(userService.getAll())
                 .thenReturn(userDtoList);
 
         String contentAsString = mvc.perform(get("/users"))
@@ -86,7 +83,7 @@ public class UserControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        Assertions.assertEquals(objectMapper.writeValueAsString(userDtoList), contentAsString);
+        assertEquals(objectMapper.writeValueAsString(userDtoList), contentAsString);
 
     }
 
@@ -102,7 +99,7 @@ public class UserControllerTest {
         mvc.perform(patch("/users/{userId}", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userToUdpate)))
-                        .andExpect(status().isOk());
+                .andExpect(status().isOk());
 
 //        verify(userService, times(1)).update(userToUdpate,userId);
 
@@ -115,23 +112,19 @@ public class UserControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        Mockito
-                .verify(userService)
+        verify(userService)
                 .getUserById(USER_ID);
-        Mockito
-                .verify(userService, times(1))
+        verify(userService, times(1))
                 .getUserById(USER_ID);
     }
 
     @SneakyThrows
     @Test
     void testDeleteUser() {
-        mvc
-                .perform(delete("/users/{userId}", USER_ID))
+        mvc.perform(delete("/users/{userId}", USER_ID))
                 .andExpect(status().isOk());
 
-        Mockito
-                .verify(userService, times(1))
+        verify(userService, times(1))
                 .deleteUsersById(USER_ID);
     }
 }

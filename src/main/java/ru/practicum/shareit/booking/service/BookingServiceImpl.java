@@ -99,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getUserBookings(Long userId, State state, Integer from, Integer size) {
         getUserOrElseThrow(userId);
-        List<Booking> bookings = bookingRepository.findByBooker_Id(userId);
+        List<Booking> bookings;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
         Instant time = Instant.now();
 
@@ -121,6 +121,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByBooker_IdAndStatus(userId, REJECTED, page);
                 break;
             default:
+                bookings = bookingRepository.findByBooker_Id(userId, page);
                 bookings.sort((booking1, booking2) -> booking2.getStart().compareTo(booking1.getStart()));
                 break;
         }
@@ -164,7 +165,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByItemOwnerIdAndStatus(userId, REJECTED, page);
                 break;
             default:
-                bookings = bookingRepository.findByItemOwnerIdOrderByStartDesc(userId);
+                bookings = bookingRepository.findByItemOwnerIdOrderByStartDesc(userId, page);
                 break;
         }
 
