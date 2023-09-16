@@ -60,7 +60,7 @@ public class UserControllerTest {
         String result = mvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userToCreate)))
-                //.andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -91,17 +91,19 @@ public class UserControllerTest {
     @SneakyThrows
     @Test
     void testUpdateUser() {
-        UserDto userToUdpate = UserDto.builder()
+        UserDto userToUpdate = UserDto.builder()
+                .id(1L)
                 .name(null)
                 .email("@yandex.ru")
                 .build();
 
         mvc.perform(patch("/users/{userId}", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userToUdpate)))
+                        .content(objectMapper.writeValueAsString(userToUpdate)))
                 .andExpect(status().isOk());
 
-//        verify(userService, times(1)).update(userToUdpate,userId);
+        verify(userService, times(1))
+                .update(userToUpdate, userToUpdate.getId());
 
     }
 

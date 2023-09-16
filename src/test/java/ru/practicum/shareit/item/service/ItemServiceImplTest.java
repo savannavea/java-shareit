@@ -6,8 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.shareit.booking.BookingMapper;
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -21,11 +19,8 @@ import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
-import ru.practicum.shareit.user.UserMapper;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.user.service.UserService;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -38,6 +33,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceImplTest {
+
     @Mock
     private ItemRepository itemRepository;
     @Mock
@@ -47,16 +43,13 @@ class ItemServiceImplTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private UserService userService;
-    @Mock
     private CommentRepository commentRepository;
     @InjectMocks
     private ItemServiceImpl itemServiceImpl;
     private User owner;
-    private UserDto ownerDto;
     private User booker;
     private Item item;
-    private BookingDto booking;
+    private Booking booking;
     private Comment comment;
     private ItemRequest itemRequest;
 
@@ -68,10 +61,12 @@ class ItemServiceImplTest {
                 .email("email2@email.com")
                 .build();
 
+        LocalDateTime created = LocalDateTime.now();
         itemRequest = ItemRequest.builder()
                 .id(1L)
                 .description("description")
                 .requester(owner)
+                .created(created)
                 .build();
 
         booker = User.builder()
@@ -89,20 +84,21 @@ class ItemServiceImplTest {
                 .itemRequest(itemRequest)
                 .build();
 
-        booking = BookingDto.builder()
+        booking = Booking.builder()
                 .id(1L)
-                .start(LocalDateTime.now())
-                .end(LocalDateTime.now().plusWeeks(2))
-                .booker(UserMapper.toUserDto(booker))
-                .itemId(1L)
+                .start(Instant.now())
+                .end(Instant.now().plusSeconds(2))
+                .booker(booker)
+                .item(item)
+                .status(Status.APPROVED)
                 .build();
 
-        ownerDto = UserMapper.toUserDto(owner);
         comment = Comment.builder()
                 .id(1L)
                 .text("comment1")
                 .author(booker)
                 .item(item)
+                .created(Instant.now())
                 .build();
 
     }
@@ -128,6 +124,13 @@ class ItemServiceImplTest {
 
     @Test
     void testAddComment() {
+        item.setOwner(owner);
+        booking.setItem(item);
+        booking.setBooker(booker);
+        booking.setStatus(Status.APPROVED);
+        comment.setItem(item);
+        comment.setCreated(Instant.now());
+
         when(userRepository.findById(owner.getId()))
                 .thenReturn(Optional.ofNullable(owner));
 
@@ -136,7 +139,7 @@ class ItemServiceImplTest {
 
         when(bookingRepository.findFirstByItemIdAndBookerIdAndStatusAndEndBefore(item.getId(),
                 owner.getId(), Status.APPROVED, Instant.now()))
-                .thenReturn(Optional.of(BookingMapper.toBooking(booking)));
+                .thenReturn(Optional.of(booking));
 
         when(commentRepository.save(comment))
                 .thenReturn(comment);
@@ -144,6 +147,7 @@ class ItemServiceImplTest {
         comment.setItem(item);
         comment.setAuthor(owner);
         comment.setCreated(Instant.now());
+
         CommentDto returnedComment = itemServiceImpl.addComment(owner.getId(), item.getId(), CommentMapper.toCommentDto(comment));
 
         verify(commentRepository, times(1))
@@ -177,7 +181,6 @@ class ItemServiceImplTest {
         List<Comment> comments = new ArrayList<>();
         item.setOwner(owner);
         comments.add(comment);
-        List<Booking> bookings = new ArrayList<>();
 
         when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
@@ -185,10 +188,12 @@ class ItemServiceImplTest {
         when(commentRepository.findAllByItemId(item.getId()))
                 .thenReturn(comments);
 
-        //List<Comment> commentList = commentRepository.findAllByItemId(item.getId());
         ItemDto itemDto = itemServiceImpl.getById(owner.getId(), item.getId());
 
-        verify(itemRepository).findById(item.getId());
+        assertEquals(itemDto.getId(), 1L);
+        assertEquals(itemDto.getName(), "item");
+        verify(itemRepository)
+                .findById(item.getId());
 
     }
 }

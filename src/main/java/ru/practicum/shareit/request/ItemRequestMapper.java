@@ -18,6 +18,7 @@ public class ItemRequestMapper {
 
     public static ItemRequest toItemRequest(User user, ItemRequestDto itemRequestDto) {
         return ItemRequest.builder()
+                .id(itemRequestDto.getId())
                 .description(itemRequestDto.getDescription())
                 .requester(itemRequestDto.getRequester())
                 .created(itemRequestDto.getCreated())

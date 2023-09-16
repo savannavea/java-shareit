@@ -45,15 +45,15 @@ public class BookingServiceImpl implements BookingService {
 
         Booking booking = BookingMapper.toBooking(bookingDto);
         User user = getUserOrElseThrow(userId);
-        booking.setBooker(user);
         Item item = getItemOrElseThrow(bookingDto.getItemId());
+        booking.setBooker(user);
         booking.setItem(item);
 
         if (!booking.getItem().getAvailable()) {
             throw new BadRequestException("Item is not available");
         }
         if (item.getOwner().getId().equals(booking.getBooker().getId())) {
-            throw new NotFoundException("Бронирование не найдено");
+            throw new NotFoundException("Reservation not found");
         }
         booking.setStatus(WAITING);
         return BookingMapper.toBookingDto(bookingRepository.save(booking));
