@@ -44,7 +44,10 @@ class ItemControllerTest {
     @Test
     void addItem() {
         Long userId = 0L;
-        when(itemService.create(userId, itemDto)).thenReturn(itemDto);
+
+        when(itemService.create(userId, itemDto))
+                .thenReturn(itemDto);
+
         String contentAsString = mockMvc.perform(post("/items")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", userId)
@@ -53,6 +56,7 @@ class ItemControllerTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+
         assertEquals(objectMapper.writeValueAsString(itemDto), contentAsString);
         verify(itemService)
                 .create(userId, itemDto);
@@ -63,7 +67,10 @@ class ItemControllerTest {
     void updateItem() {
         Long itemId = 0L;
         Long userId = 0L;
-        when(itemService.update(userId, itemDto, itemId)).thenReturn(itemDto);
+
+        when(itemService.update(userId, itemDto, itemId))
+                .thenReturn(itemDto);
+
         String contentAsString = mockMvc.perform(patch("/items/{itemId}", itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", userId)
@@ -72,9 +79,10 @@ class ItemControllerTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+
         assertEquals(objectMapper.writeValueAsString(itemDto), contentAsString);
         verify(itemService, times(1))
-                .update(userId, itemDto,itemId);
+                .update(userId, itemDto, itemId);
     }
 
     @SneakyThrows
@@ -82,7 +90,10 @@ class ItemControllerTest {
     void getItemById() {
         Long itemId = 0L;
         Long userId = 0L;
-        when(itemService.getById(userId, itemId)).thenReturn(itemDto);
+
+        when(itemService.getById(userId, itemId))
+                .thenReturn(itemDto);
+
         String contentAsString = mockMvc.perform(get("/items/{itemId}", itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", userId)
@@ -121,6 +132,5 @@ class ItemControllerTest {
 
         verify(itemService, times(1))
                 .addComment(userId, itemId, commentDto);
-        //verifyNoMoreInteractions(itemService);
     }
 }

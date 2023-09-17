@@ -56,7 +56,8 @@ class ItemRequestControllerTest {
     void addRequest() {
         Long userId = requester.getId();
 
-        when(itemRequestService.create(userId, itemRequestDto)).thenReturn(itemRequestDto);
+        when(itemRequestService.create(userId, itemRequestDto))
+                .thenReturn(itemRequestDto);
 
         String contentAsString = mockMvc.perform(post("/requests")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -78,7 +79,8 @@ class ItemRequestControllerTest {
     void getItemsByUserId() {
         Long userId = requester.getId();
 
-        when(itemRequestService.getAllByUserId(userId)).thenReturn(List.of(itemRequestDto));
+        when(itemRequestService.getAllByUserId(userId))
+                .thenReturn(List.of(itemRequestDto));
 
         String contentAsString = mockMvc.perform(MockMvcRequestBuilders.get(("/requests"))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -103,6 +105,7 @@ class ItemRequestControllerTest {
 
         when(itemRequestService.getAllRequests(userId, from, size))
                 .thenReturn(List.of(itemRequestDto));
+
         String contentAsString = mockMvc.perform(MockMvcRequestBuilders.get(("/requests/all"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", userId)
@@ -113,6 +116,7 @@ class ItemRequestControllerTest {
                 .getContentAsString();
 
         List<ItemRequestDto> result = List.of(itemRequestDto);
+
         assertEquals(objectMapper.writeValueAsString(result), contentAsString);
         verify(itemRequestService)
                 .getAllRequests(userId, from, size);
@@ -125,10 +129,11 @@ class ItemRequestControllerTest {
         Long userId = requester.getId();
         Long requestId = itemRequestDto.getId();
 
+        when(itemRequestService.getById(userId, requestId))
+                .thenReturn(itemRequestDto);
 
-        when(itemRequestService.getById(userId, requestId)).thenReturn(itemRequestDto);
-
-        String contentAsString = mockMvc.perform(MockMvcRequestBuilders.get("/requests/{requestId}", requestId)
+        String contentAsString = mockMvc.perform(MockMvcRequestBuilders
+                        .get("/requests/{requestId}", requestId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", userId)
                         .content(objectMapper.writeValueAsString(itemRequestDto)))
@@ -140,6 +145,5 @@ class ItemRequestControllerTest {
         assertEquals(objectMapper.writeValueAsString(itemRequestDto), contentAsString);
         verify(itemRequestService)
                 .getById(userId, requestId);
-
     }
 }

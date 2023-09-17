@@ -24,9 +24,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
-    public static final String TEST_NAME = "Kate";
-    public static final String TEST_EMAIL = "Kate@yandex.ru";
-    public static final long TEST_ID = 1L;
     @Mock
     private UserRepository userRepository;
 
@@ -52,9 +49,9 @@ class UserServiceImplTest {
         UserDto returnedUser = userServiceimpl.create(UserMapper.toUserDto(expectedUser));
 
 
-        assertEquals(TEST_ID, returnedUser.getId());
-        assertEquals(TEST_NAME, returnedUser.getName());
-        assertEquals(TEST_EMAIL, returnedUser.getEmail());
+        assertEquals(expectedUser.getId(), returnedUser.getId());
+        assertEquals(expectedUser.getName(), returnedUser.getName());
+        assertEquals(expectedUser.getEmail(), returnedUser.getEmail());
 
         verify(userRepository)
                 .save(expectedUser);
