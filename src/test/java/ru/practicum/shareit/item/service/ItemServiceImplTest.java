@@ -18,8 +18,10 @@ import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +44,8 @@ class ItemServiceImplTest {
     private BookingRepository bookingRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private UserServiceImpl userServiceImpl;
     @Mock
     private CommentRepository commentRepository;
     @InjectMocks
@@ -85,8 +90,8 @@ class ItemServiceImplTest {
 
         booking = Booking.builder()
                 .id(1L)
-                .start(Instant.now())
-                .end(Instant.now().plusSeconds(2))
+                .start(Instant.now().plusSeconds(1))
+                .end(Instant.now().plusSeconds(100))
                 .booker(booker)
                 .item(item)
                 .status(Status.APPROVED)
@@ -99,7 +104,6 @@ class ItemServiceImplTest {
                 .item(item)
                 .created(Instant.now())
                 .build();
-
     }
 
     @Test
@@ -183,5 +187,68 @@ class ItemServiceImplTest {
         verify(itemRepository)
                 .findById(item.getId());
 
+    }
+
+    @Test
+    void testGetByWhenQueryIsBlank() {
+        String query = "";
+
+        itemServiceImpl.getByQuery(query);
+
+        verify(itemRepository, never()).findItemsByQuery(anyString());
+    }
+
+    @Test
+    void testGetByQuery() {
+        String query = "query";
+        List<Item> items = new ArrayList<>();
+        Item firstItem = Item.builder().id(1L).name("Query").build();
+        items.add(firstItem);
+        Item secondItem = Item.builder().id(2L).name("Qu").description("Query").build();
+        items.add(secondItem);
+
+        when(itemRepository.findItemsByQuery(query))
+                .thenReturn(items);
+
+        List<ItemDto> result = itemServiceImpl.getByQuery(query);
+
+        assertEquals(result.size(), 2);
+        verify(itemRepository)
+                .findItemsByQuery(query.toLowerCase());
+    }
+
+    @Test
+    void testGetAllCommentsByItemId() {
+        List<Comment> comments = new ArrayList<>();
+        when(commentRepository.findAllByItemId(item.getId()))
+                .thenReturn(comments);
+
+        itemServiceImpl.getAllCommentsByItemId(item.getId());
+
+        verify(commentRepository, times(1))
+                .findAllByItemId(item.getId());
+    }
+
+    @Test
+    void testDeleteUser() {
+        itemServiceImpl.deleteItemsById(anyLong());
+
+        verify(itemRepository, times(1))
+                .deleteById(anyLong());
+    }
+
+    @Test
+    void testGetAllByUserId() {
+        List<Item> items = new ArrayList<>();
+        items.add(item);
+        when(userServiceImpl.getUserById(booker.getId()))
+                .thenReturn(UserMapper.toUserDto(booker));
+
+        when(itemRepository.findAllByOwnerIdOrderByIdAsc(owner.getId()))
+                .thenReturn(items);
+
+        List<ItemDto> itemDtos = itemServiceImpl.getAllByUserId(owner.getId());
+
+        assertNotNull(itemDtos);
     }
 }

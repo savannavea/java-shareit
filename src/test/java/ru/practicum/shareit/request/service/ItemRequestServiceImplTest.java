@@ -123,7 +123,6 @@ class ItemRequestServiceImplTest {
 
         List<ItemRequestDto> actualRequestsDto = itemRequestService.getAllRequests(userId, from, size);
 
-        //assertEquals(result, actualRequestsDto);
         assertNotNull(actualRequestsDto);
     }
 
