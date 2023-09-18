@@ -151,7 +151,6 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByItemOwnerIdAndEndIsBefore(userId, time, page);
                 break;
             case FUTURE:
-
                 bookings = bookingRepository.findByItemOwnerIdAndStartIsAfter(userId, time, page);
                 break;
             case CURRENT:

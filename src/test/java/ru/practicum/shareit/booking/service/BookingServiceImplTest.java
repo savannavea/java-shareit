@@ -8,8 +8,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -18,11 +21,12 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,11 +36,13 @@ import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static ru.practicum.shareit.booking.enums.State.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class BookingServiceImplTest {
 
+    private static final Sort DEFAULT_SORT = Sort.by(Sort.Direction.DESC, "start");
     @Mock
     private BookingRepository bookingRepository;
     @Mock
@@ -67,6 +73,7 @@ class BookingServiceImplTest {
                 .build();
 
         LocalDateTime created = LocalDateTime.now();
+
         ItemRequest itemRequest = ItemRequest.builder()
                 .id(1L)
                 .description("description")
@@ -85,15 +92,13 @@ class BookingServiceImplTest {
 
         itemDto = ItemMapper.toItemDto(item);
 
-        BookingDto bookingDto = BookingDto.builder()
+        booking = Booking.builder()
                 .id(1L)
-                .start(LocalDateTime.now())
-                .end(LocalDateTime.now())
-                .booker(UserMapper.toUserDto(booker))
-                .itemId(1L)
+                .start(Instant.now())
+                .end(Instant.now())
+                .booker(booker)
+                .item(item)
                 .build();
-
-        booking = BookingMapper.toBooking(bookingDto);
     }
 
     @Test
@@ -163,4 +168,180 @@ class BookingServiceImplTest {
 
     }
 
+    @Test
+    void testGetUserBookingsStatePast() {
+        State state = PAST;
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByBooker_IdAndEndIsBefore(booker.getId(), Instant.now(), page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        verify(bookingRepository).findByBooker_IdAndEndIsBefore(anyLong(),
+                any(Instant.class), any());
+    }
+
+    @Test
+    void testGetUserBookingsStateFuture() {
+        State state = FUTURE;
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByBooker_IdAndStartIsAfter(booker.getId(), Instant.now(), page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        verify(bookingRepository).findByBooker_IdAndStartIsAfter(anyLong(),
+                any(Instant.class), any());
+    }
+
+    @Test
+    void testGetUserBookingsStateCurrent() {
+        State state = CURRENT;
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByBooker_IdAndStartIsBeforeAndEndIsAfter(booker.getId(),
+                Instant.now(), Instant.now(), page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        verify(bookingRepository).findByBooker_IdAndStartIsBeforeAndEndIsAfter(anyLong(),
+                any(Instant.class), any(Instant.class), any());
+    }
+
+    @Test
+    void testGetUserBookingsStateWaiting() {
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByBooker_IdAndStatus(booker.getId(), Status.WAITING, page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getUserBookings(booker.getId(), State.WAITING, 0, 2);
+
+        verify(bookingRepository).findByBooker_IdAndStatus(anyLong(), any(), any());
+    }
+
+    @Test
+    void testGetUserBookingsStateRejected() {
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByBooker_IdAndStatus(booker.getId(), Status.REJECTED, page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getUserBookings(booker.getId(), State.REJECTED, 0, 2);
+
+        verify(bookingRepository).findByBooker_IdAndStatus(anyLong(), any(), any());
+    }
+
+    @Test
+    void testGetItemsBookingsStatePast() {
+        State state = PAST;
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItemOwnerIdAndEndIsBefore(booker.getId(), Instant.now(), page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getItemsBookings(booker.getId(), state, 0, 2);
+
+        verify(bookingRepository)
+                .findByItemOwnerIdAndEndIsBefore(anyLong(), any(Instant.class), any());
+    }
+
+    @Test
+    void testGetItemsBookingsStateFuture() {
+        State state = FUTURE;
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItemOwnerIdAndStartIsAfter(booker.getId(), Instant.now(), page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getItemsBookings(booker.getId(), state, 0, 2);
+
+        verify(bookingRepository)
+                .findByItemOwnerIdAndStartIsAfter(anyLong(), any(Instant.class), any());
+    }
+
+    @Test
+    void testGetItemsBookingsStateCurrent() {
+        State state = CURRENT;
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItemOwnerIdAndStartIsBeforeAndEndIsAfter(booker.getId(),
+                Instant.now(), Instant.now(), page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getItemsBookings(booker.getId(), state, 0, 2);
+
+        verify(bookingRepository)
+                .findByItemOwnerIdAndStartIsBeforeAndEndIsAfter(anyLong(), any(Instant.class), any(Instant.class), any());
+    }
+
+    @Test
+    void testGetItemBookingsStateWaiting() {
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItemOwnerIdAndStatus(booker.getId(), Status.WAITING, page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getItemsBookings(booker.getId(), State.WAITING, 0, 2);
+
+        verify(bookingRepository)
+                .findByItemOwnerIdAndStatus(anyLong(), any(), any());
+    }
+
+    @Test
+    void testGetItemBookingsStateRejected() {
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItemOwnerIdAndStatus(booker.getId(), Status.REJECTED, page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getItemsBookings(booker.getId(), State.REJECTED, 0, 2);
+
+        verify(bookingRepository)
+                .findByItemOwnerIdAndStatus(anyLong(), any(), any());
+    }
 }
+
