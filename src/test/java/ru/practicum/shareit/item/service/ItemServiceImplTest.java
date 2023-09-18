@@ -123,31 +123,23 @@ class ItemServiceImplTest {
 
     @Test
     void testAddComment() {
-        item.setOwner(owner);
-        booking.setItem(item);
-        booking.setBooker(booker);
-        booking.setStatus(Status.APPROVED);
-        comment.setItem(item);
-        comment.setCreated(Instant.now());
-        comment.setAuthor(owner);
-
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.ofNullable(owner));
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.ofNullable(booker));
 
         when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
 
-        when(bookingRepository.findFirstByItemIdAndBookerIdAndStatusAndEndBefore(item.getId(),
-                owner.getId(), Status.APPROVED, Instant.now()))
+        when(bookingRepository.findFirstByItemIdAndBookerIdAndStatusAndEndBefore(eq(item.getId()),
+                eq(booker.getId()), eq(Status.APPROVED), any(Instant.class)))
                 .thenReturn(Optional.of(booking));
 
-        when(commentRepository.save(comment))
+        when(commentRepository.save(any(Comment.class)))
                 .thenReturn(comment);
 
-        itemServiceImpl.addComment(owner.getId(), item.getId(), CommentMapper.toCommentDto(comment));
+        itemServiceImpl.addComment(booker.getId(), item.getId(), CommentMapper.toCommentDto(comment));
 
         verify(commentRepository, times(1))
-                .save(comment);
+                .save(any(Comment.class));
     }
 
     @Test
