@@ -14,8 +14,6 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.ItemRequestMapper;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
-import ru.practicum.shareit.user.UserMapper;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -44,7 +42,6 @@ class ItemRequestServiceImplTest {
     @InjectMocks
     private ItemRequestServiceImpl itemRequestService;
     private User owner;
-    private UserDto ownerDto;
     private User requester;
     private ItemDto itemDto;
     private ItemRequestDto itemRequestDto;
@@ -78,8 +75,6 @@ class ItemRequestServiceImplTest {
                 .requester(requester)
                 .created(LocalDateTime.now())
                 .build();
-
-        ownerDto = UserMapper.toUserDto(owner);
     }
 
     @Test
@@ -118,34 +113,17 @@ class ItemRequestServiceImplTest {
         Long userId = requester.getId();
         int from = 0;
         int size = 20;
-        /*
-        PageRequest page = PageRequest.of(from, size);
 
-        ItemRequest itemRequest = ItemRequestMapper.toItemRequest(requester, itemRequestDto);
-        List<ItemRequest> expectedRequestsDto = List.of(itemRequest);
-        Item item = ItemMapper.toItem(itemDto);
-
-        List<Long> requestIds = (new PageImpl<>(List.of(itemRequest))).stream()
-                .map(ItemRequest::getId)
-                .collect(Collectors.toList());
-        List<Item> itemList = List.of(item);
-        itemList.get(0).setItemRequest(itemRequest);
-
-        var result = expectedRequestsDto.stream()
-                .map(ItemRequestMapper::toItemRequestDto)
-                .collect(Collectors.toList());
-        result.get(0).setItems(List.of(ItemMapper.toItemDto(item)));
-*/
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
-        when(itemRequestRepository.findAllByRequesterIdNotOrderByCreatedAsc(owner.getId(), PageRequest.of(from, size)))
-                .thenReturn(List.of(ItemRequestMapper.toItemRequest(owner, itemRequestDto)));
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(requester));
+        when(itemRequestRepository.findAllByRequesterIdNotOrderByCreatedAsc(userId, PageRequest.of(from, size)))
+                .thenReturn(List.of(ItemRequestMapper.toItemRequest(requester, itemRequestDto)));
         when(itemRepository.findByItemRequestId(itemRequestDto.getId()))
                 .thenReturn(List.of(ItemMapper.toItem(itemDto)));
 
         List<ItemRequestDto> actualRequestsDto = itemRequestService.getAllRequests(userId, from, size);
 
-        //  assertEquals(result, actualRequestsDto);
+        //assertEquals(result, actualRequestsDto);
         assertNotNull(actualRequestsDto);
     }
 

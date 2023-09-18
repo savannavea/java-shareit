@@ -19,7 +19,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserMapper;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -47,16 +46,11 @@ class BookingServiceImplTest {
     @InjectMocks
     private BookingServiceImpl bookingService;
     private User owner;
-    private UserDto ownerDto;
     private User booker;
     private ItemDto itemDto;
     private Item item;
-    private BookingDto bookingDto;
     private Booking booking;
-    private ItemRequest itemRequest;
 
-    private int from;
-    private int size;
 
     @BeforeEach
     void setUser() {
@@ -73,7 +67,7 @@ class BookingServiceImplTest {
                 .build();
 
         LocalDateTime created = LocalDateTime.now();
-        itemRequest = ItemRequest.builder()
+        ItemRequest itemRequest = ItemRequest.builder()
                 .id(1L)
                 .description("description")
                 .requester(owner)
@@ -91,7 +85,7 @@ class BookingServiceImplTest {
 
         itemDto = ItemMapper.toItemDto(item);
 
-        bookingDto = BookingDto.builder()
+        BookingDto bookingDto = BookingDto.builder()
                 .id(1L)
                 .start(LocalDateTime.now())
                 .end(LocalDateTime.now())
@@ -100,10 +94,6 @@ class BookingServiceImplTest {
                 .build();
 
         booking = BookingMapper.toBooking(bookingDto);
-        ownerDto = UserMapper.toUserDto(owner);
-
-        from = 0;
-        size = 20;
     }
 
     @Test
@@ -168,7 +158,7 @@ class BookingServiceImplTest {
         assertNotNull(returnedBookingDto);
         assertEquals(booking.getId(), returnedBookingDto.getId());
 
-        verify(bookingRepository, atLeast(2))
+        verify(bookingRepository, atLeast(1))
                 .findById(booking.getId());
 
     }

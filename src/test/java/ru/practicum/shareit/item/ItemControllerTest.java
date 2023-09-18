@@ -34,6 +34,7 @@ class ItemControllerTest {
     @Test
     void setItemDto() {
         itemDto = ItemDto.builder()
+                .id(1L)
                 .name("name")
                 .description("description")
                 .available(true)
@@ -119,7 +120,9 @@ class ItemControllerTest {
                 .authorName("authorName")
                 .created(LocalDateTime.now())
                 .build();
-        when(itemService.addComment(anyLong(), anyLong(), any(CommentDto.class))).thenReturn(commentDto);
+
+        when(itemService.addComment(anyLong(), anyLong(), any(CommentDto.class)))
+                .thenReturn(commentDto);
 
         String contentAsString = mockMvc.perform(post("/items/{itemId}/comment", itemId)
                         .header("X-Sharer-User-Id", userId)

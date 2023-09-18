@@ -39,8 +39,6 @@ class BookingControllerTest {
     @MockBean
     private BookingService bookingService;
     private User booker;
-    private User owner;
-    private ItemDto item;
     private BookingDto bookingDto;
     private int from;
     private int size;
@@ -48,7 +46,7 @@ class BookingControllerTest {
     @BeforeEach
     @Test
     void setUpBookingDto() {
-        owner = User.builder()
+        User owner = User.builder()
                 .id(2L)
                 .name("owner")
                 .email("email2@email.com")
@@ -59,16 +57,18 @@ class BookingControllerTest {
                 .name("booker")
                 .email("email2@email.com")
                 .build();
-        item = ItemDto.builder()
+
+        ItemDto item = ItemDto.builder()
                 .id(1L)
                 .name("item")
                 .description("description")
                 .ownerId(owner.getId())
                 .available(true)
                 .build();
+
         bookingDto = BookingDto.builder()
                 .id(1L)
-                .start(LocalDateTime.now())
+                .start(LocalDateTime.now().plusWeeks(1))
                 .end(LocalDateTime.now().plusWeeks(2))
                 .booker(UserMapper.toUserDto(booker))
                 .itemId(1L)
@@ -91,7 +91,7 @@ class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", booker.getId())
                         .content(objectMapper.writeValueAsString(bookingDto)))
-                //.andExpect(status().isCreated())
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -171,7 +171,7 @@ class BookingControllerTest {
                 .getContentAsString();
 
         verify(bookingService, times(1))
-                .getItemsBookings(userId, state, from, size);
+                .getUserBookings(userId, state, from, size);
 
     }
 
@@ -196,7 +196,7 @@ class BookingControllerTest {
                 .getContentAsString();
 
         verify(bookingService, times(1))
-                .getUserBookings(userId, state, from, size);
+                .getItemsBookings(userId, state, from, size);
 
     }
 }
