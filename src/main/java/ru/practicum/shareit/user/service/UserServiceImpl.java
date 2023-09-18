@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -12,7 +11,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,8 +37,8 @@ public class UserServiceImpl implements UserService {
         if (userDto.getName() != null) {
             user.setName(userDto.getName());
         }
-        if (userDto.getEmail() != null && !user.getEmail().equals(userDto.getEmail())) {
-            checkEmailDuplicate(user);
+        if (userDto.getEmail() != null) {
+            user.setEmail(user.getEmail());
         }
         if (userDto.getEmail() != null) {
             user.setEmail(userDto.getEmail());
@@ -72,14 +70,5 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUsersById(Long id) {
         userRepository.deleteById(id);
-    }
-
-    private void checkEmailDuplicate(User user) {
-        List<User> listAllUsers = userRepository.findAll();
-        for (User owner : listAllUsers) {
-            if (!(Objects.equals(owner.getId(), user.getId())) && Objects.equals(owner.getEmail(), user.getEmail()))
-                throw new ConflictException(
-                        String.format("User with email address: %s already registered", user.getEmail()));
-        }
     }
 }
