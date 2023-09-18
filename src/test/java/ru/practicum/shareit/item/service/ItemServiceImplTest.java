@@ -129,6 +129,7 @@ class ItemServiceImplTest {
         booking.setStatus(Status.APPROVED);
         comment.setItem(item);
         comment.setCreated(Instant.now());
+        comment.setAuthor(owner);
 
         when(userRepository.findById(owner.getId()))
                 .thenReturn(Optional.ofNullable(owner));
@@ -142,10 +143,6 @@ class ItemServiceImplTest {
 
         when(commentRepository.save(comment))
                 .thenReturn(comment);
-
-        comment.setItem(item);
-        comment.setAuthor(owner);
-        comment.setCreated(Instant.now());
 
         itemServiceImpl.addComment(owner.getId(), item.getId(), CommentMapper.toCommentDto(comment));
 
