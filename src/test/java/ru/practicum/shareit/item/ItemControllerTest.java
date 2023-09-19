@@ -136,4 +136,14 @@ class ItemControllerTest {
         verify(itemService, times(1))
                 .addComment(userId, itemId, commentDto);
     }
+
+    @SneakyThrows
+    @Test
+    void testDeleteUser() {
+        mockMvc.perform(delete("/items/{itemId}", itemDto.getId()))
+                .andExpect(status().isOk());
+
+        verify(itemService, times(1))
+                .deleteItemsById(itemDto.getId());
+    }
 }

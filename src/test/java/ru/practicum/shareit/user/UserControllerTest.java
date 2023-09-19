@@ -33,7 +33,7 @@ public class UserControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    MockMvc mvc;
+    MockMvc mockMvc;
 
     User user;
 
@@ -57,7 +57,7 @@ public class UserControllerTest {
         when(userService.create(userToCreate))
                 .thenReturn(userToCreate);
 
-        String result = mvc.perform(post("/users")
+        String result = mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userToCreate)))
                 .andExpect(status().isOk())
@@ -77,7 +77,7 @@ public class UserControllerTest {
         when(userService.getAll())
                 .thenReturn(userDtoList);
 
-        String contentAsString = mvc.perform(get("/users"))
+        String contentAsString = mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -97,7 +97,7 @@ public class UserControllerTest {
                 .email("@yandex.ru")
                 .build();
 
-        mvc.perform(patch("/users/{userId}", USER_ID)
+        mockMvc.perform(patch("/users/{userId}", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userToUpdate)))
                 .andExpect(status().isOk());
@@ -110,7 +110,7 @@ public class UserControllerTest {
     @SneakyThrows
     @Test
     void testGetUserById() {
-        mvc.perform(get("/users/{userId}", USER_ID))
+        mockMvc.perform(get("/users/{userId}", USER_ID))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -123,7 +123,7 @@ public class UserControllerTest {
     @SneakyThrows
     @Test
     void testDeleteUser() {
-        mvc.perform(delete("/users/{userId}", USER_ID))
+        mockMvc.perform(delete("/users/{userId}", USER_ID))
                 .andExpect(status().isOk());
 
         verify(userService, times(1))
