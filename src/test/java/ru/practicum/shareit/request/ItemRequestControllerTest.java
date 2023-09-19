@@ -111,7 +111,6 @@ class ItemRequestControllerTest {
                         .header("X-Sharer-User-Id", userId)
                                 .param("from", String.valueOf(from))
                                 .param("size", String.valueOf(size)))
-                        //.content(objectMapper.writeValueAsString(itemRequestDto)))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()

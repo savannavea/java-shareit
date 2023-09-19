@@ -9,11 +9,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -139,7 +141,55 @@ class ItemControllerTest {
 
     @SneakyThrows
     @Test
-    void testDeleteUser() {
+    void testGetAllByUserId() {
+        Long userId = 0L;
+
+        when(itemService.getAllByUserId(userId))
+                .thenReturn(List.of(itemDto));
+
+        String contentAsString = mockMvc.perform(MockMvcRequestBuilders.get(("/items"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", userId)
+                        .content(objectMapper.writeValueAsString(itemDto)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<ItemDto> result = List.of(itemDto);
+
+        assertEquals(objectMapper.writeValueAsString(result), contentAsString);
+        verify(itemService)
+                .getAllByUserId(userId);
+    }
+
+    @SneakyThrows
+    @Test
+    void testGetByQuery() {
+        String query = "query";
+
+        when(itemService.getByQuery(query))
+                .thenReturn(List.of(itemDto));
+
+        String contentAsString = mockMvc.perform(MockMvcRequestBuilders.get(("/items/search"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("text", query)
+                        .content(objectMapper.writeValueAsString(itemDto)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<ItemDto> result = List.of(itemDto);
+
+        assertEquals(objectMapper.writeValueAsString(result), contentAsString);
+        verify(itemService)
+                .getByQuery(query);
+    }
+
+    @SneakyThrows
+    @Test
+    void testDeleteItem() {
         mockMvc.perform(delete("/items/{itemId}", itemDto.getId()))
                 .andExpect(status().isOk());
 
