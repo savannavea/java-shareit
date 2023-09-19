@@ -47,16 +47,4 @@ public class ErrorHandler {
         log.warn("{}: {}", ex.getClass().getSimpleName(), errors);
         return new ErrorResponse(errors.keySet().toString() + errors.values());
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleEmailExistingException(final ConflictException exception) {
-        return new ErrorResponse(exception.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException exception) {
-        return new ErrorResponse(exception.getMessage());
-    }
 }
