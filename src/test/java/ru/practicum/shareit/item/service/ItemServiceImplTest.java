@@ -26,6 +26,7 @@ import ru.practicum.shareit.user.service.UserServiceImpl;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -187,6 +188,22 @@ class ItemServiceImplTest {
         verify(itemRepository)
                 .findById(item.getId());
 
+    }
+
+    @Test
+    void testGetByIdWhenCommentListIsEmpty() {
+        List<Comment> comments = new ArrayList<>();
+        item.setOwner(owner);
+
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+
+        when(commentRepository.findAllByItemId(item.getId()))
+                .thenReturn(comments);
+
+        ItemDto itemDto = itemServiceImpl.getById(owner.getId(), item.getId());
+
+        assertEquals(itemDto.getComments(), Collections.emptyList());
     }
 
     @Test

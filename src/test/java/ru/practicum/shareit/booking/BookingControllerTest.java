@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -172,6 +173,30 @@ class BookingControllerTest {
 
         verify(bookingService, times(1))
                 .getUserBookings(userId, state, from, size);
+
+    }
+
+    @SneakyThrows
+    @Test
+    void getBookingsWithInvalidState() {
+        State state = State.ALL;
+        Long userId = booker.getId();
+        List<BookingDto> bookingDtoList = List.of(bookingDto);
+
+        when(bookingService.getItemsBookings(userId, state, from, size))
+                .thenReturn(bookingDtoList);
+
+        mockMvc.perform(get("/bookings")
+                        .header("X-Sharer-User-Id", userId)
+                        .param("state", "ALLLL")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        verify(bookingService, never())
+                .getItemsBookings(userId, state, from, size);
 
     }
 

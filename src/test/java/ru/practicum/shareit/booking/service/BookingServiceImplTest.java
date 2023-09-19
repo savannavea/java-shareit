@@ -16,6 +16,8 @@ import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -34,6 +36,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static ru.practicum.shareit.booking.enums.State.*;
@@ -52,6 +55,7 @@ class BookingServiceImplTest {
     @InjectMocks
     private BookingServiceImpl bookingService;
     private User owner;
+    private User ownerInvalid;
     private User booker;
     private ItemDto itemDto;
     private Item item;
@@ -103,9 +107,7 @@ class BookingServiceImplTest {
 
     @Test
     void testCreateBooking() {
-        booking.setItem(item);
         booking.setStatus(Status.WAITING);
-        booking.setBooker(booker);
 
         when(userRepository.findById(booker.getId()))
                 .thenReturn(Optional.of(booker));
@@ -116,7 +118,6 @@ class BookingServiceImplTest {
 
         BookingDto savedDto = bookingService.create(booker.getId(), BookingMapper.toBookingDto(booking));
 
-        booking.setStatus(Status.WAITING);
         assertThat(savedDto, notNullValue());
         assertThat(savedDto.getStatus(), equalTo(Status.WAITING));
         assertThat(savedDto, equalTo(BookingMapper.toBookingDto(booking)));
@@ -125,13 +126,44 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void testApproveBooking() {
-        Item item = ItemMapper.toItem(itemDto);
-        item.setOwner(owner);
-
-        booking.setItem(item);
+    void testCreateBookingWithInvalidItem() {
         booking.setStatus(Status.WAITING);
-        booking.setBooker(booker);
+        item.setAvailable(false);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+
+        BadRequestException exception = assertThrows(BadRequestException.class, () ->
+                bookingService.create(booker.getId(), BookingMapper.toBookingDto(booking)));
+
+        assertEquals("Item is not available", exception.getMessage());
+        verify(bookingRepository, never())
+                .save(booking);
+    }
+
+    @Test
+    void testCreateBookingWithInvalidBooker() {
+        booking.setStatus(Status.WAITING);
+        item.setOwner(booker);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                bookingService.create(booker.getId(), BookingMapper.toBookingDto(booking)));
+
+        assertEquals("Reservation not found", exception.getMessage());
+        verify(bookingRepository, never())
+                .save(booking);
+    }
+
+    @Test
+    void testApproveBooking() {
+        booking.setStatus(Status.WAITING);
 
         when(userRepository.findById(owner.getId()))
                 .thenReturn(Optional.of(owner));
@@ -148,10 +180,48 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void testApproveBookingWithInvalidUserId() {
+        booking.setStatus(Status.WAITING);
+        ownerInvalid = User.builder()
+                .id(3L)
+                .name("owner")
+                .email("email2@email.com")
+                .build();
+
+        when(userRepository.findById(ownerInvalid.getId()))
+                .thenReturn(Optional.of(owner));
+        when(bookingRepository.findById(booking.getId()))
+                .thenReturn(Optional.of(booking));
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                bookingService.approve(ownerInvalid.getId(), booking.getId(), "true"));
+
+        assertEquals("Id of the user's item does not match the id of the owner of the item",
+                exception.getMessage());
+        verify(bookingRepository, never())
+                .save(booking);
+    }
+
+    @Test
+    void testApproveBookingWithInvalidStatus() {
+        booking.setStatus(Status.APPROVED);
+
+        when(userRepository.findById(owner.getId()))
+                .thenReturn(Optional.of(owner));
+        when(bookingRepository.findById(booking.getId()))
+                .thenReturn(Optional.of(booking));
+
+        BadRequestException exception = assertThrows(BadRequestException.class, () ->
+                bookingService.approve(owner.getId(), booking.getId(), "true"));
+
+        assertEquals("The status has been confirmed by the owner before",
+                exception.getMessage());
+        verify(bookingRepository, never())
+                .save(booking);
+    }
+
+    @Test
     void testGetBookingById() {
-        item.setOwner(owner);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(Status.WAITING);
 
         when(bookingRepository.findById(booking.getId()))
