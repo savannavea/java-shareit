@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.CommentMapper;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -30,8 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -166,6 +166,27 @@ class ItemServiceImplTest {
         assertEquals(returnedItem.getId(), 1L);
         assertEquals(returnedItem.getName(), "item");
         verify(itemRepository, times(1))
+                .save(item);
+    }
+
+    @Test
+    void testUpdateItemWhenUserDoseNotOwn() {
+        item.getOwner().setId(0L);
+        when(userRepository.findById(owner.getId()))
+                .thenReturn(Optional.of(owner));
+
+        when(itemRepository.findById(item.getId()))
+                .thenReturn(Optional.of(item));
+
+        when(itemRepository.findOwnerIdByItemId(item.getId()))
+                .thenReturn(Optional.of(item.getId()));
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                itemServiceImpl.update(owner.getId(), ItemMapper.toItemDto(item), item.getId()));
+
+        assertEquals("User with id 0 does not own item with id 1",
+                exception.getMessage());
+        verify(itemRepository, never())
                 .save(item);
     }
 
