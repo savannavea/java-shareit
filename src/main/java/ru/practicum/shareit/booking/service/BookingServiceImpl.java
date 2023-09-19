@@ -171,7 +171,7 @@ public class BookingServiceImpl implements BookingService {
         List<BookingDto> result = new ArrayList<>();
 
         for (Booking booking : bookings) {
-            var bookingDto = BookingMapper.toBookingDto(booking);
+            BookingDto bookingDto = BookingMapper.toBookingDto(booking);
             bookingDto.setItem(ItemMapper.toItemDto(booking.getItem()));
             bookingDto.setBooker(UserMapper.toUserDto(booking.getBooker()));
             result.add(bookingDto);

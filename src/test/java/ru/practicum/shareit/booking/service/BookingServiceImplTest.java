@@ -239,6 +239,23 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void testGetUserBookingsStateAll() {
+        State state = ALL;
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByBooker_Id(booker.getId(), page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getUserBookings(booker.getId(), state, 0, 2);
+
+        verify(bookingRepository).findByBooker_Id(anyLong(), any());
+    }
+
+    @Test
     void testGetUserBookingsStatePast() {
         State state = PAST;
         int from = 0;
@@ -323,6 +340,24 @@ class BookingServiceImplTest {
         bookingService.getUserBookings(booker.getId(), State.REJECTED, 0, 2);
 
         verify(bookingRepository).findByBooker_IdAndStatus(anyLong(), any(), any());
+    }
+
+    @Test
+    void testGetItemsBookingsStateAll() {
+        State state = ALL;
+        int from = 0;
+        int size = 20;
+        PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
+
+        when(userRepository.findById(booker.getId()))
+                .thenReturn(Optional.of(booker));
+        when(bookingRepository.findByItemOwnerIdOrderByStartDesc(booker.getId(), page))
+                .thenReturn(List.of(booking));
+
+        bookingService.getItemsBookings(booker.getId(), state, 0, 2);
+
+        verify(bookingRepository)
+                .findByItemOwnerIdOrderByStartDesc(anyLong(), any());
     }
 
     @Test

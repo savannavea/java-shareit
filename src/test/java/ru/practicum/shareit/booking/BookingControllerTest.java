@@ -84,7 +84,7 @@ class BookingControllerTest {
 
     @SneakyThrows
     @Test
-    void addBookingRequest() {
+    void createBookingRequest() {
         when(bookingService.create(bookingDto.getId(), bookingDto))
                 .thenReturn(bookingDto);
 
@@ -101,6 +101,27 @@ class BookingControllerTest {
                 .create(booker.getId(), bookingDto);
     }
 
+    @SneakyThrows
+    @Test
+    void createBookingsWithInvalidDate() {
+        when(bookingService.create(bookingDto.getId(), bookingDto))
+                .thenReturn(bookingDto);
+
+        bookingDto.setStart(LocalDateTime.now());
+        bookingDto.setEnd(LocalDateTime.now().minusDays(1));
+        mockMvc.perform(post("/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", booker.getId())
+                        .content(objectMapper.writeValueAsString(bookingDto)))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        verify(bookingService, never())
+                .create(bookingDto.getId(), bookingDto);
+
+    }
 
     @SneakyThrows
     @Test
