@@ -163,7 +163,7 @@ public class ItemServiceImpl implements ItemService {
     public Item getItemOrElseThrow(Long itemId) {
         return itemRepository
                 .findById(itemId)
-                .orElseThrow(() -> new NotFoundException(String.format("Item's id %d doesn't found!" + itemId)));
+                .orElseThrow(() -> new NotFoundException(String.format("Item's id %d doesn't found!", itemId)));
     }
 
     private ItemOwnerDto getLastBooking(Item item) {

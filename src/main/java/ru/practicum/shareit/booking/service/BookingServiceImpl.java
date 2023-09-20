@@ -15,7 +15,7 @@ import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -38,15 +38,15 @@ public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
     private final UserService userService;
-    private final ItemRepository itemRepository;
+    private final ItemService itemService;
 
     @Override
     public BookingDto create(Long userId, BookingDto bookingDto) {
 
         Booking booking = BookingMapper.toBooking(bookingDto);
         User user = userService.getUserOrElseThrow(userId);
-        Item item = getItemOrElseThrow(bookingDto.getItemId());
         booking.setBooker(user);
+        Item item = itemService.getItemOrElseThrow(bookingDto.getItemId());
         booking.setItem(item);
 
         if (!booking.getItem().getAvailable()) {
@@ -178,12 +178,6 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return result;
-    }
-
-    private Item getItemOrElseThrow(Long itemId) {
-        return itemRepository
-                .findById(itemId)
-                .orElseThrow(() -> new NotFoundException(String.format("Item's id %d doesn't found!", itemId)));
     }
 
     private Booking getBookingOrElseThrow(Long bookingId) {

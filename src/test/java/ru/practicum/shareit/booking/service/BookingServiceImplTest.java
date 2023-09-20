@@ -21,7 +21,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserServiceImpl;
@@ -49,7 +49,7 @@ class BookingServiceImplTest {
     @Mock
     private BookingRepository bookingRepository;
     @Mock
-    private ItemRepository itemRepository;
+    private ItemService itemService;
     @Mock
     private UserServiceImpl userServiceImpl;
     @InjectMocks
@@ -111,8 +111,8 @@ class BookingServiceImplTest {
 
         when(userServiceImpl.getUserOrElseThrow(booker.getId()))
                 .thenReturn(booker);
-        when(itemRepository.findById(item.getId()))
-                .thenReturn(Optional.of(item));
+        when(itemService.getItemOrElseThrow(item.getId()))
+                .thenReturn(item);
         when(bookingRepository.save(booking))
                 .thenReturn(booking);
 
@@ -121,7 +121,7 @@ class BookingServiceImplTest {
         assertThat(savedDto, notNullValue());
         assertThat(savedDto.getStatus(), equalTo(Status.WAITING));
         assertThat(savedDto, equalTo(BookingMapper.toBookingDto(booking)));
-        verify(itemRepository).findById(item.getId());
+        verify(itemService).getItemOrElseThrow(item.getId());
 
     }
 
@@ -132,8 +132,8 @@ class BookingServiceImplTest {
 
         when(userServiceImpl.getUserOrElseThrow(booker.getId()))
                 .thenReturn(booker);
-        when(itemRepository.findById(item.getId()))
-                .thenReturn(Optional.of(item));
+        when(itemService.getItemOrElseThrow(item.getId()))
+                .thenReturn(item);
 
         BadRequestException exception = assertThrows(BadRequestException.class, () ->
                 bookingService.create(booker.getId(), BookingMapper.toBookingDto(booking)));
@@ -150,8 +150,8 @@ class BookingServiceImplTest {
 
         when(userServiceImpl.getUserOrElseThrow(booker.getId()))
                 .thenReturn(booker);
-        when(itemRepository.findById(item.getId()))
-                .thenReturn(Optional.of(item));
+        when(itemService.getItemOrElseThrow(item.getId()))
+                .thenReturn(item);
 
         NotFoundException exception = assertThrows(NotFoundException.class, () ->
                 bookingService.create(booker.getId(), BookingMapper.toBookingDto(booking)));
