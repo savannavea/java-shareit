@@ -156,7 +156,7 @@ class BookingServiceImplTest {
         NotFoundException exception = assertThrows(NotFoundException.class, () ->
                 bookingService.create(booker.getId(), BookingMapper.toBookingDto(booking)));
 
-        assertEquals("Reservation not found", exception.getMessage());
+        assertEquals("The booking was not found because the user is the booking owner", exception.getMessage());
         verify(bookingRepository, never())
                 .save(booking);
     }
