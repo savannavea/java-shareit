@@ -53,7 +53,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Item is not available");
         }
         if (item.getOwner().getId().equals(booking.getBooker().getId())) {
-            throw new NotFoundException("Reservation not found");
+            throw new NotFoundException("The booking was not found because the user is the booking owner");
         }
         booking.setStatus(WAITING);
         return BookingMapper.toBookingDto(bookingRepository.save(booking));

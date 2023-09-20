@@ -15,8 +15,8 @@ import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -37,27 +37,21 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDto> getAllByUserId(Long userId) {
         userService.getUserOrElseThrow(userId);
-        List<ItemRequest> itemRequests = itemRequestRepository
-                .findItemRequestByRequesterId(userId);
-        List<ItemRequestDto> result = new ArrayList<>();
-        for (ItemRequest itemRequest : itemRequests) {
-            result.add(addItemsToRequest(itemRequest));
-        }
-        return result;
+
+        return itemRequestRepository.findItemRequestByRequesterId(userId).stream()
+                .map(this::addItemsToRequest)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<ItemRequestDto> getAllRequests(Long userId, Integer from, Integer size) {
         userService.getUserOrElseThrow(userId);
-        List<ItemRequest> itemRequests = itemRequestRepository
-                .findAllByRequesterIdNotOrderByCreatedAsc(userId, PageRequest.of(from, size));
 
-        List<ItemRequestDto> result = new ArrayList<>();
-        for (ItemRequest itemRequest : itemRequests) {
-            result.add(addItemsToRequest(itemRequest));
-        }
-        return result;
-
+        return itemRequestRepository
+                .findAllByRequesterIdNotOrderByCreatedAsc(userId, PageRequest.of(from, size))
+                .stream()
+                .map(this::addItemsToRequest)
+                .collect(Collectors.toList());
     }
 
     @Override
