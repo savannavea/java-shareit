@@ -30,9 +30,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(UserDto userDto, Long id) {
 
-        User user = userRepository
-                .findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", id)));
+        User user = getUserOrElseThrow(id);
 
         if (userDto.getName() != null) {
             user.setName(userDto.getName());
@@ -70,5 +68,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUsersById(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public User getUserOrElseThrow(Long id) {
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", id)));
     }
 }

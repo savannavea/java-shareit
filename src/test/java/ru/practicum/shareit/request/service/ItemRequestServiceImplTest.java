@@ -15,7 +15,7 @@ import ru.practicum.shareit.request.ItemRequestMapper;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,7 +36,7 @@ class ItemRequestServiceImplTest {
     @Mock
     private ItemRequestRepository itemRequestRepository;
     @Mock
-    private UserRepository userRepository;
+    private UserServiceImpl userServiceImpl;
     @Mock
     private ItemRepository itemRepository;
     @InjectMocks
@@ -79,8 +79,8 @@ class ItemRequestServiceImplTest {
 
     @Test
     void testCrestedItemRequestDto() {
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(owner.getId()))
+                .thenReturn(owner);
         when(itemRequestRepository.save(ItemRequestMapper.toItemRequest(owner, itemRequestDto)))
                 .thenReturn(ItemRequestMapper.toItemRequest(owner, itemRequestDto));
 
@@ -95,8 +95,8 @@ class ItemRequestServiceImplTest {
 
     @Test
     void testGetAllByUserId() {
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(owner.getId()))
+                .thenReturn(owner);
         when(itemRequestRepository.findItemRequestByRequesterId(owner.getId()))
                 .thenReturn(List.of(ItemRequestMapper.toItemRequest(owner, itemRequestDto)));
         when(itemRepository.findByItemRequestId(itemRequestDto.getId()))
@@ -114,8 +114,8 @@ class ItemRequestServiceImplTest {
         int from = 0;
         int size = 20;
 
-        when(userRepository.findById(userId))
-                .thenReturn(Optional.of(requester));
+        when(userServiceImpl.getUserOrElseThrow(userId))
+                .thenReturn(requester);
         when(itemRequestRepository.findAllByRequesterIdNotOrderByCreatedAsc(userId, PageRequest.of(from, size)))
                 .thenReturn(List.of(ItemRequestMapper.toItemRequest(requester, itemRequestDto)));
         when(itemRepository.findByItemRequestId(itemRequestDto.getId()))
@@ -128,8 +128,8 @@ class ItemRequestServiceImplTest {
 
     @Test
     void testGetItemRequestById() {
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(owner.getId()))
+                .thenReturn(owner);
         when(itemRequestRepository.findById(requester.getId()))
                 .thenReturn(Optional.ofNullable(ItemRequestMapper.toItemRequest(requester, itemRequestDto)));
         when(itemRepository.findByItemRequestId(itemRequestDto.getId()))

@@ -13,7 +13,7 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,19 +24,19 @@ import java.util.List;
 public class ItemRequestServiceImpl implements ItemRequestService {
 
     private final ItemRequestRepository itemRequestRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final ItemRepository itemRepository;
 
     @Override
     public ItemRequestDto create(Long userId, ItemRequestDto itemRequestDto) {
-        User user = getUserOrElseThrow(userId);
+        User user = userService.getUserOrElseThrow(userId);
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(user, itemRequestDto);
         return ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(itemRequest));
     }
 
     @Override
     public List<ItemRequestDto> getAllByUserId(Long userId) {
-        getUserOrElseThrow(userId);
+        userService.getUserOrElseThrow(userId);
         List<ItemRequest> itemRequests = itemRequestRepository
                 .findItemRequestByRequesterId(userId);
         List<ItemRequestDto> result = new ArrayList<>();
@@ -48,7 +48,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getAllRequests(Long userId, Integer from, Integer size) {
-        getUserOrElseThrow(userId);
+        userService.getUserOrElseThrow(userId);
         List<ItemRequest> itemRequests = itemRequestRepository
                 .findAllByRequesterIdNotOrderByCreatedAsc(userId, PageRequest.of(from, size));
 
@@ -62,17 +62,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto getById(Long userId, Long requestId) {
-        getUserOrElseThrow(userId);
+        userService.getUserOrElseThrow(userId);
         ItemRequest itemRequest = itemRequestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", userId)));
         addItemsToRequest(itemRequest);
         return addItemsToRequest(itemRequest);
-    }
-
-    private User getUserOrElseThrow(Long userId) {
-        return userRepository
-                .findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", userId)));
     }
 
     private ItemRequestDto addItemsToRequest(ItemRequest itemRequest) {

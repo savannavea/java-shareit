@@ -18,7 +18,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -37,14 +37,14 @@ public class BookingServiceImpl implements BookingService {
     private static final Sort DEFAULT_SORT = Sort.by(Sort.Direction.DESC, "start");
 
     private final BookingRepository bookingRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final ItemRepository itemRepository;
 
     @Override
     public BookingDto create(Long userId, BookingDto bookingDto) {
 
         Booking booking = BookingMapper.toBooking(bookingDto);
-        User user = getUserOrElseThrow(userId);
+        User user = userService.getUserOrElseThrow(userId);
         Item item = getItemOrElseThrow(bookingDto.getItemId());
         booking.setBooker(user);
         booking.setItem(item);
@@ -62,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto approve(Long userId, Long bookingId, String approved) {
 
-        getUserOrElseThrow(userId);
+        userService.getUserOrElseThrow(userId);
         Booking booking = getBookingOrElseThrow(bookingId);
 
         if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
@@ -98,7 +98,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getUserBookings(Long userId, State state, Integer from, Integer size) {
-        getUserOrElseThrow(userId);
+        userService.getUserOrElseThrow(userId);
         List<Booking> bookings;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
         Instant time = Instant.now();
@@ -141,7 +141,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getItemsBookings(Long userId, State state, Integer from, Integer size) {
 
-        getUserOrElseThrow(userId);
+        userService.getUserOrElseThrow(userId);
         List<Booking> bookings;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
         Instant time = Instant.now();
@@ -178,12 +178,6 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return result;
-    }
-
-    private User getUserOrElseThrow(Long userId) {
-        return userRepository
-                .findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", userId)));
     }
 
     private Item getItemOrElseThrow(Long itemId) {

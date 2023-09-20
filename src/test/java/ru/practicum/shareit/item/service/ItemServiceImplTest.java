@@ -21,7 +21,6 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.time.Instant;
@@ -43,8 +42,6 @@ class ItemServiceImplTest {
     private ItemRequestRepository itemRequestRepository;
     @Mock
     private BookingRepository bookingRepository;
-    @Mock
-    private UserRepository userRepository;
     @Mock
     private UserServiceImpl userServiceImpl;
     @Mock
@@ -109,8 +106,8 @@ class ItemServiceImplTest {
 
     @Test
     void testCreateItem() {
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(owner.getId()))
+                .thenReturn(owner);
 
         when(itemRequestRepository.findById(ItemMapper.toItemDto(item).getRequestId()))
                 .thenReturn(Optional.of(itemRequest));
@@ -128,8 +125,8 @@ class ItemServiceImplTest {
 
     @Test
     void testAddComment() {
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.ofNullable(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
 
         when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
@@ -149,8 +146,8 @@ class ItemServiceImplTest {
 
     @Test
     void testUpdateItem() {
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(owner.getId()))
+                .thenReturn(owner);
 
         when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
@@ -172,8 +169,8 @@ class ItemServiceImplTest {
     @Test
     void testUpdateItemWhenUserDoseNotOwn() {
         item.getOwner().setId(0L);
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(owner.getId()))
+                .thenReturn(owner);
 
         when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));

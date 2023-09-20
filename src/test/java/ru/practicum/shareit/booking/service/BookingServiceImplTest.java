@@ -24,7 +24,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -51,7 +51,7 @@ class BookingServiceImplTest {
     @Mock
     private ItemRepository itemRepository;
     @Mock
-    private UserRepository userRepository;
+    private UserServiceImpl userServiceImpl;
     @InjectMocks
     private BookingServiceImpl bookingService;
     private User owner;
@@ -109,8 +109,8 @@ class BookingServiceImplTest {
     void testCreateBooking() {
         booking.setStatus(Status.WAITING);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
         when(bookingRepository.save(booking))
@@ -130,8 +130,8 @@ class BookingServiceImplTest {
         booking.setStatus(Status.WAITING);
         item.setAvailable(false);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
 
@@ -148,8 +148,8 @@ class BookingServiceImplTest {
         booking.setStatus(Status.WAITING);
         item.setOwner(booker);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(itemRepository.findById(item.getId()))
                 .thenReturn(Optional.of(item));
 
@@ -165,8 +165,8 @@ class BookingServiceImplTest {
     void testApproveBooking() {
         booking.setStatus(Status.WAITING);
 
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(owner.getId()))
+                .thenReturn(owner);
         when(bookingRepository.findById(booking.getId()))
                 .thenReturn(Optional.of(booking));
         when(bookingRepository.save(booking))
@@ -188,8 +188,8 @@ class BookingServiceImplTest {
                 .email("email2@email.com")
                 .build();
 
-        when(userRepository.findById(ownerInvalid.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(ownerInvalid.getId()))
+                .thenReturn(owner);
         when(bookingRepository.findById(booking.getId()))
                 .thenReturn(Optional.of(booking));
 
@@ -206,8 +206,8 @@ class BookingServiceImplTest {
     void testApproveBookingWithInvalidStatus() {
         booking.setStatus(Status.APPROVED);
 
-        when(userRepository.findById(owner.getId()))
-                .thenReturn(Optional.of(owner));
+        when(userServiceImpl.getUserOrElseThrow(owner.getId()))
+                .thenReturn(owner);
         when(bookingRepository.findById(booking.getId()))
                 .thenReturn(Optional.of(booking));
 
@@ -245,8 +245,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByBooker_Id(booker.getId(), page))
                 .thenReturn(List.of(booking));
 
@@ -262,8 +262,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByBooker_IdAndEndIsBefore(booker.getId(), Instant.now(), page))
                 .thenReturn(List.of(booking));
 
@@ -280,8 +280,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByBooker_IdAndStartIsAfter(booker.getId(), Instant.now(), page))
                 .thenReturn(List.of(booking));
 
@@ -298,8 +298,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByBooker_IdAndStartIsBeforeAndEndIsAfter(booker.getId(),
                 Instant.now(), Instant.now(), page))
                 .thenReturn(List.of(booking));
@@ -316,8 +316,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByBooker_IdAndStatus(booker.getId(), Status.WAITING, page))
                 .thenReturn(List.of(booking));
 
@@ -332,8 +332,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByBooker_IdAndStatus(booker.getId(), Status.REJECTED, page))
                 .thenReturn(List.of(booking));
 
@@ -349,8 +349,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByItemOwnerIdOrderByStartDesc(booker.getId(), page))
                 .thenReturn(List.of(booking));
 
@@ -367,8 +367,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByItemOwnerIdAndEndIsBefore(booker.getId(), Instant.now(), page))
                 .thenReturn(List.of(booking));
 
@@ -385,8 +385,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByItemOwnerIdAndStartIsAfter(booker.getId(), Instant.now(), page))
                 .thenReturn(List.of(booking));
 
@@ -403,8 +403,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByItemOwnerIdAndStartIsBeforeAndEndIsAfter(booker.getId(),
                 Instant.now(), Instant.now(), page))
                 .thenReturn(List.of(booking));
@@ -421,8 +421,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByItemOwnerIdAndStatus(booker.getId(), Status.WAITING, page))
                 .thenReturn(List.of(booking));
 
@@ -438,8 +438,8 @@ class BookingServiceImplTest {
         int size = 20;
         PageRequest page = PageRequest.of(from / size, size, DEFAULT_SORT);
 
-        when(userRepository.findById(booker.getId()))
-                .thenReturn(Optional.of(booker));
+        when(userServiceImpl.getUserOrElseThrow(booker.getId()))
+                .thenReturn(booker);
         when(bookingRepository.findByItemOwnerIdAndStatus(booker.getId(), Status.REJECTED, page))
                 .thenReturn(List.of(booking));
 
