@@ -23,4 +23,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "JOIN it.owner AS u " +
             "WHERE it.id = ?1")
     Optional<Long> findOwnerIdByItemId(Long itemId);
+
+    List<Item> findByItemRequestId(Long id);
 }

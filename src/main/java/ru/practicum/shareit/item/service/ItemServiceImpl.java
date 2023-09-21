@@ -19,8 +19,9 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.Instant;
@@ -37,21 +38,29 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
     private final UserService userService;
 
     @Override
     public ItemDto create(Long userId, ItemDto itemDto) {
-        User user = getUserOrElseThrow(userId);
+        User user = userService.getUserOrElseThrow(userId);
         Item item = ItemMapper.toItemWithOwner(itemDto, user);
+        if (itemDto.getRequestId() != null) {
+            Long requestId = itemDto.getRequestId();
+            ItemRequest itemRequest = itemRequestRepository
+                    .findById(requestId)
+                    .orElseThrow(() -> new NotFoundException(String.format(
+                            "ItemRequest's id %d doesn't found!", requestId)));
+            item.setItemRequest(itemRequest);
+        }
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
     public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
-        User user = getUserOrElseThrow(userId);
+        User user = userService.getUserOrElseThrow(userId);
         Item item = getItemOrElseThrow(itemId);
         checkBooker(userId, itemId);
         Comment comment = CommentMapper.toComment(commentDto);
@@ -63,7 +72,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto update(Long userId, ItemDto itemDto, Long id) {
-        getUserOrElseThrow(userId);
+        userService.getUserOrElseThrow(userId);
         Item item = getItemOrElseThrow(id);
         Optional<Long> ownerId = itemRepository.findOwnerIdByItemId(item.getId());
         if (ownerId.isEmpty() || !ownerId.get().equals(item.getOwner().getId())) {
@@ -150,16 +159,11 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    private User getUserOrElseThrow(Long userId) {
-        return userRepository
-                .findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.format("User's id %d doesn't found!", userId)));
-    }
-
-    private Item getItemOrElseThrow(Long itemId) {
+    @Override
+    public Item getItemOrElseThrow(Long itemId) {
         return itemRepository
                 .findById(itemId)
-                .orElseThrow(() -> new NotFoundException(String.format("Item's id %d doesn't found!" + itemId)));
+                .orElseThrow(() -> new NotFoundException(String.format("Item's id %d doesn't found!", itemId)));
     }
 
     private ItemOwnerDto getLastBooking(Item item) {

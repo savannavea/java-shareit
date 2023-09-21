@@ -3,18 +3,22 @@ package ru.practicum.shareit.booking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.enums.State;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.exception.BadRequestException;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor(onConstructor__ = @Autowired)
+@Validated
 public class BookingController {
 
     private final BookingService bookingService;
@@ -42,14 +46,18 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> findUserBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                             @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getUserBookings(userId, convertingState(state));
+                                             @RequestParam(defaultValue = "ALL") String state,
+                                             @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                             @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer size) {
+        return bookingService.getUserBookings(userId, convertingState(state), from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> findItemsBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                              @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getItemsBookings(userId, convertingState(state));
+                                              @RequestParam(defaultValue = "ALL") String state,
+                                              @RequestParam(defaultValue = "0") @Min(0) Integer from,
+                                              @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer size) {
+        return bookingService.getItemsBookings(userId, convertingState(state), from, size);
     }
 
     private static void validateDate(BookingDto bookingDto) {

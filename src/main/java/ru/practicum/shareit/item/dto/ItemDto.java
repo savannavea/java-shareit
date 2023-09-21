@@ -1,12 +1,10 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -14,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode
 public class ItemDto {
 
     private Long id;
@@ -36,4 +35,7 @@ public class ItemDto {
     private ItemOwnerDto nextBooking;
 
     private List<CommentDto> comments;
+
+    @Positive
+    private Long requestId;
 }
