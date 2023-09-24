@@ -11,7 +11,9 @@ services:
       - server
       - db
     environment:
-      - SHAREIT_SERVER_URL=http://server:9090
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006"
+      SHAREIT_SERVER_URL: "http://server:9090"
+
 
   server:
     build: server/
@@ -22,6 +24,8 @@ services:
       - "5005:5005"
     depends_on:
       - db
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
 
   db:
     image: postgres:13.7-alpine
