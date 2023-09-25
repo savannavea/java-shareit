@@ -2,8 +2,8 @@ version: '3.8'
 services:
   gateway:
     build: gateway/
-    image: shareit-gateway-image
-    container_name: shareit-gateway
+    container_name: shareit-gateway-image
+    restart: always
     ports:
       - "8080:8080"
       - "5006:5006"
@@ -17,8 +17,8 @@ services:
 
   server:
     build: server/
-    image: shareit-server-image
-    container_name: shareit-server
+    container_name: shareit-server-image
+    restart: always
     ports:
       - "9090:9090"
       - "5005:5005"
@@ -29,7 +29,7 @@ services:
 
   db:
     image: postgres:13.7-alpine
-    container_name: java-shareit
+    restart: always
     ports:
       - "6541:5432"
     environment:
