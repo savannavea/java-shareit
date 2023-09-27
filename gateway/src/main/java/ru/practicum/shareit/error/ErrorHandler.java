@@ -14,7 +14,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 import ru.practicum.shareit.error.model.ErrorResponse;
 
-import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,23 +24,11 @@ public class ErrorHandler {
 
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
-    @ExceptionHandler
+    @ExceptionHandler({ValidationException.class,
+            IllegalArgumentException.class,
+            MissingRequestHeaderException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final ValidationException e) {
-        log.error(e.getMessage(), e);
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
-        log.error(e.getMessage(), e);
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleConstraintViolationException(final ConstraintViolationException e) {
+    public ErrorResponse handleValidationException(final Exception e) {
         log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
@@ -67,13 +54,6 @@ public class ErrorHandler {
         });
         log.error(mapper.writeValueAsString(errors), e);
         return new ErrorResponse(errors);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMissingRequestHeaderException(final MissingRequestHeaderException e) {
-        log.error(e.getMessage(), e);
-        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
