@@ -21,7 +21,6 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
-
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
     @ExceptionHandler({ValidationException.class,
