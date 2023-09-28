@@ -44,7 +44,8 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValid(final MethodArgumentNotValidException e) throws JsonProcessingException {
+    public ErrorResponse handleMethodArgumentNotValid(final MethodArgumentNotValidException e)
+            throws JsonProcessingException {
         Map<String, String> errors = new HashMap<>();
         e.getBindingResult().getFieldErrors().forEach((error) -> {
             String fieldName = error.getField();
