@@ -7,7 +7,6 @@ import ru.practicum.shareit.exception.BadRequestException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -18,7 +17,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserDto> create(@Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> create(@RequestBody UserDto userDto) {
         if (userDto.getEmail().isBlank() || !userDto.getEmail().contains("@")) {
             throw new BadRequestException("Email cannot be empty and must contain @");
         }
