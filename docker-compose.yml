@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  gateway:
+    build: gateway/
+    container_name: shareit-gateway-image
+    restart: always
+    ports:
+      - "8080:8080"
+      - "5006:5006"
+    depends_on:
+      - server
+      - db
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006"
+      SHAREIT_SERVER_URL: "http://server:9090"
+
+
+  server:
+    build: server/
+    container_name: shareit-server-image
+    restart: always
+    ports:
+      - "9090:9090"
+      - "5005:5005"
+    depends_on:
+      - db
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+
+  db:
+    image: postgres:13.7-alpine
+    restart: always
+    ports:
+      - "6541:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: shareit
